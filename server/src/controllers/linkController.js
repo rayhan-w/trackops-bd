@@ -116,7 +116,7 @@ exports.createLink = async (req, res, next) => {
       ipAddress: req.ip,
     });
 
-    const fullShortUrl = `${process.env.BASE_SHORT_DOMAIN || 'http://localhost:3000'}/l/${link.shortCode}`;
+    const fullShortUrl = `${process.env.CLIENT_URL || process.env.BASE_SHORT_DOMAIN || process.env.CLIENT_ORIGIN || 'http://localhost:3000'}/l/${link.shortCode}`;
 
     res.status(201).json({
       success: true,
@@ -172,7 +172,7 @@ exports.getLinks = async (req, res, next) => {
       .skip(skip)
       .limit(Number(limit));
 
-    const baseUrl = process.env.BASE_SHORT_DOMAIN || 'http://localhost:3000';
+    const baseUrl = process.env.CLIENT_URL || process.env.BASE_SHORT_DOMAIN || process.env.CLIENT_ORIGIN || 'http://localhost:3000';
     const formattedLinks = links.map((link) => ({
       ...link.toObject(),
       fullShortUrl: `${baseUrl}/l/${link.shortCode}`,
@@ -231,7 +231,7 @@ exports.getLinkById = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Unauthorized link access' });
     }
 
-    const baseUrl = process.env.BASE_SHORT_DOMAIN || 'http://localhost:3000';
+    const baseUrl = process.env.CLIENT_URL || process.env.BASE_SHORT_DOMAIN || process.env.CLIENT_ORIGIN || 'http://localhost:3000';
 
     // Fetch recent visits
     const recentVisits = await LinkVisit.find({ linkId: link._id })
