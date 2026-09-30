@@ -110,6 +110,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Temp DB debug endpoint
+app.get('/api/dbcheck', async (req, res) => {
+  try {
+    const { getPool, isFallback } = require('./config/db');
+    const pool = getPool();
+    if (!pool || isFallback()) return res.json({ mode: 'memory-fallback', pool: !!pool, fallback: isFallback() });
+    const r = await pool.query('SELECT COUNT(*) as cnt FROM links');
+    const sample = await pool.query('SELECT id, short_code, destination_url, owner_id, created_at FROM links ORDER BY created_at DESC LIMIT 5');
+    res.json({ mode: 'postgres', linkCount: r.rows[0].cnt, recentLinks: sample.rows });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
 // Serve static frontend assets (JS/CSS built by Vite)
 app.use(express.static(path.join(__dirname, '../public')));
 
