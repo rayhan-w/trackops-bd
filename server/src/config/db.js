@@ -308,9 +308,8 @@ const connectDB = async () => {
   }
 };
 
-module.exports = {
-  connectDB,
-  getPool: () => pool,
-  isFallback: () => isFallbackMode,
-  memoryStore,
-};
+module.exports = connectDB;
+module.exports.connectDB = connectDB;
+module.exports.getPool = () => pool;
+module.exports.isFallback = () => isFallbackMode;
+module.exports.memoryStore = memoryStore;
