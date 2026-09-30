@@ -122,13 +122,9 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-let server;
-// Only start standalone listener when executed directly (not when imported as a module/serverless function)
-if (require.main === module) {
-  server = app.listen(PORT, () => {
-    console.log(`[TrackOps Server] Running in ${process.env.NODE_ENV || 'development'} on port ${PORT}`);
-  });
-}
+const server = app.listen(PORT, () => {
+  console.log(`[TrackOps Server] Running on port ${PORT}`);
+});
 
 module.exports = app;
 module.exports.app = app;
