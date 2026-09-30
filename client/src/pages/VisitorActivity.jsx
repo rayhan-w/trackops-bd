@@ -25,6 +25,7 @@ import VisitDetailsModal from '../components/VisitDetailsModal';
 import IpAnalysisModal from '../components/IpAnalysisModal';
 import LocationModal from '../components/LocationModal';
 import CameraModal from '../components/CameraModal';
+import Footer from '../components/Footer';
 import { api } from '../services/api';
 
 export default function VisitorActivity() {
@@ -459,6 +460,7 @@ export default function VisitorActivity() {
             )}
           </div>
         </main>
+        <Footer />
       </div>
 
       {/* MODAL 1: VISIT DETAILS MODAL (Screenshot 1) */}

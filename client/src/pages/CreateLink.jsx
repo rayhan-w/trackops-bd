@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
+import Footer from '../components/Footer';
 import { api } from '../services/api';
 
 export default function CreateLink() {
@@ -372,6 +373,7 @@ export default function CreateLink() {
             </div>
           )}
         </main>
+        <Footer />
       </div>
     </div>
   );

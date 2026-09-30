@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
+import Footer from '../components/Footer';
 import { api } from '../services/api';
 
 export default function AuditLogs() {
@@ -166,6 +167,7 @@ export default function AuditLogs() {
             </div>
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );

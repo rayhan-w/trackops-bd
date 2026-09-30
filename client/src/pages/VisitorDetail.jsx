@@ -24,6 +24,7 @@ import {
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import GeoMap from '../components/GeoMap';
+import Footer from '../components/Footer';
 import { api } from '../services/api';
 
 export default function VisitorDetail() {
@@ -453,6 +454,7 @@ export default function VisitorDetail() {
             </div>
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );

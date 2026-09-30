@@ -3,23 +3,88 @@ import { Shield, Lock, Scale, AlertTriangle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
+  const agencies = [
+    {
+      name: 'বাংলাদেশ পুলিশ',
+      subtext: 'Bangladesh Police',
+      logo: '/logos/police.jpg',
+      badge: 'Headquarters',
+    },
+    {
+      name: 'সিআইডি পুলিশ',
+      subtext: 'CID Bangladesh Police',
+      logo: '/logos/cid.jpg',
+      badge: 'Investigation',
+    },
+    {
+      name: 'ডিটেকটিভ ব্রাঞ্চ',
+      subtext: 'Detective Branch (DB)',
+      logo: '/logos/db.jpg',
+      badge: 'Special Branch',
+    },
+    {
+      name: 'সাইবার পুলিশ বগুড়া',
+      subtext: 'Cyber Police Bogura (CPB)',
+      logo: '/logos/cpb.jpg',
+      badge: 'Cyber Unit',
+    },
+    {
+      name: 'সাইবার পুলিশ ইউনিট',
+      subtext: 'CPR - DB Rajshahi District',
+      logo: '/logos/cpr.jpg',
+      badge: 'Cyber Unit',
+    },
+  ];
+
   return (
-    <footer className="bg-[#F5F4F0] text-stone-600 border-t border-stone-200/80 text-sm">
-      {/* Disclaimer Banner */}
-      <div className="bg-orange-100/60 border-b border-orange-200/60 py-3 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-center text-center space-x-2 text-xs text-orange-950 font-medium">
-          <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0" />
-          <span>
-            <strong>Disclaimer:</strong> TrackOps BD is a technical demonstration & lawful case inquiry workflow prototype.
-            It does not claim official law enforcement affiliation unless explicitly accredited under formal government mandate.
-          </span>
+    <footer className="bg-[#F5F4F0] text-stone-600 border-t border-stone-200/80 text-sm mt-auto w-full">
+      {/* Law Enforcement & Cyber Units Reference Section */}
+      <div className="bg-white/80 border-b border-stone-200/80 py-6 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center space-x-2 mb-4 text-center">
+            <Shield className="w-4 h-4 text-orange-600" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600">
+              Law Enforcement & Cyber Crime Investigation Technical Standards
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {agencies.map((agency, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl p-3 border border-stone-200 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all flex items-center space-x-3 group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center p-1 overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <img
+                    src={agency.logo}
+                    alt={agency.subtext}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-xs text-[#0F172A] truncate">
+                    {agency.name}
+                  </div>
+                  <div className="text-[10px] text-stone-500 truncate font-medium">
+                    {agency.subtext}
+                  </div>
+                  <span className="inline-block mt-0.5 text-[9px] font-semibold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-full border border-orange-200/60">
+                    {agency.badge}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
-          <div className="space-y-4 md:col-span-1">
+          <div className="space-y-3 md:col-span-1">
             <div className="flex items-center space-x-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-xs">
                 <Sparkles className="w-4 h-4" />
@@ -79,7 +144,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Demo Access */}
+          {/* Security Standards */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-stone-800 mb-3">
               Security Standard

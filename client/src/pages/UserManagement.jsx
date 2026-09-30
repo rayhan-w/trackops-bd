@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
+import Footer from '../components/Footer';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -435,6 +436,7 @@ export default function UserManagement() {
             </div>
           </div>
         </main>
+        <Footer />
       </div>
 
       {/* Action Confirmation Modal */}

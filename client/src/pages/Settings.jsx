@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
+import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
@@ -284,6 +285,7 @@ export default function Settings() {
             </form>
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );

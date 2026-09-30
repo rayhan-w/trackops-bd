@@ -43,6 +43,7 @@ import VisitDetailsModal from '../components/VisitDetailsModal';
 import IpAnalysisModal from '../components/IpAnalysisModal';
 import LocationModal from '../components/LocationModal';
 import CameraModal from '../components/CameraModal';
+import Footer from '../components/Footer';
 import { api } from '../services/api';
 
 const COLORS = ['#2563EB', '#6366F1', '#8B5CF6', '#10B981', '#F59E0B'];
@@ -618,6 +619,7 @@ export default function Analytics() {
             </>
           )}
         </main>
+        <Footer />
       </div>
 
       {/* MODAL 1: VISIT DETAILS MODAL */}

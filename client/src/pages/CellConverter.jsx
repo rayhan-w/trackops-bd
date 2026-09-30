@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
+import Footer from '../components/Footer';
 
 export default function CellConverter() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -315,6 +316,7 @@ export default function CellConverter() {
             )}
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );
