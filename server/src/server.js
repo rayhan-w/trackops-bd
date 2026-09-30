@@ -110,10 +110,73 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Helper to serve SPA index.html
+const getSpaHtml = () => {
+  const publicIndexPath = path.join(__dirname, '../public/index.html');
+  if (fs.existsSync(publicIndexPath)) {
+    return fs.readFileSync(publicIndexPath, 'utf8');
+  }
+  const clientDistPath = path.join(__dirname, '../../client/dist/index.html');
+  if (fs.existsSync(clientDistPath)) {
+    return fs.readFileSync(clientDistPath, 'utf8');
+  }
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrackOps BD - Link Management & Consent Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-CZ-HtnYh.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-2aFSgtcf.css">
+  </head>
+  <body class="bg-[#F8FAFC] text-slate-800 antialiased font-sans">
+    <div id="root"></div>
+  </body>
+</html>`;
+};
+
+// Serve static assets from server/public if present
+const publicDir = path.join(__dirname, '../public');
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+}
+
 // Direct short link route: /l/:shortCode -> Redirects to client visitor consent page
 app.get('/l/:shortCode', (req, res) => {
   const { shortCode } = req.params;
   res.redirect(`/v/${encodeURIComponent(shortCode)}`);
+});
+
+// Visitor landing page /v/:shortCode served directly with SPA HTML
+app.get('/v/:shortCode', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(getSpaHtml());
+});
+
+// SPA page routes served directly on server
+app.get([
+  '/login',
+  '/register',
+  '/dashboard',
+  '/links',
+  '/links/*',
+  '/visitor-activity',
+  '/visitor-activity/*',
+  '/analytics',
+  '/approval-pending',
+  '/account-suspended',
+  '/account-rejected',
+  '/settings',
+  '/notifications',
+  '/telecom-gateway',
+  '/cell-converter'
+], (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(getSpaHtml());
 });
 
 // Centralized Error Handler

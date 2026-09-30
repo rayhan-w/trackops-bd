@@ -32,22 +32,111 @@
       }
     },
     {
+      "source": "/v/(.*)",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
       "source": "/assets/(.*)",
       "destination": {
         "service": "client"
       }
     },
     {
-      "source": "/(.*\\.(?:js|css|ico|png|jpg|jpeg|svg|woff|woff2|ttf|json|map))",
+      "source": "/login",
       "destination": {
-        "service": "client"
+        "service": "server"
+      }
+    },
+    {
+      "source": "/register",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/dashboard",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/links/(.*)",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/links",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/visitor-activity/(.*)",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/visitor-activity",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/analytics",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/approval-pending",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/account-suspended",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/account-rejected",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/settings",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/notifications",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/telecom-gateway",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/cell-converter",
+      "destination": {
+        "service": "server"
       }
     },
     {
       "source": "/(.*)",
       "destination": {
-        "service": "client",
-        "path": "/index.html"
+        "service": "client"
       }
     }
   ]
