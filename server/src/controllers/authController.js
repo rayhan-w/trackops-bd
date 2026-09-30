@@ -1,0 +1,327 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
+const AuditLog = require('../models/AuditLog');
+
+// Generate JWT Token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'trackops_super_secret_jwt_key_2026_bd_secure_hash', {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
+};
+
+// @desc    Register a new user (Status = PENDING)
+// @route   POST /api/auth/register
+// @access  Public
+exports.register = async (req, res, next) => {
+  try {
+    const { name, email, phone, password, confirmPassword } = req.body;
+
+    // Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Full Name is required' });
+    }
+
+    if (!email && !phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide either an Email address or a Phone number for registration',
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long',
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Passwords do not match',
+      });
+    }
+
+    // Check duplicate email
+    if (email) {
+      const emailExists = await User.findOne({ email: email.toLowerCase().trim() });
+      if (emailExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'An account with this email address already exists',
+        });
+      }
+    }
+
+    // Check duplicate phone
+    if (phone) {
+      const phoneExists = await User.findOne({ phone: phone.trim() });
+      if (phoneExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'An account with this phone number already exists',
+        });
+      }
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // Create user with PENDING status
+    const user = await User.create({
+      name: name.trim(),
+      email: email ? email.toLowerCase().trim() : undefined,
+      phone: phone ? phone.trim() : undefined,
+      passwordHash,
+      role: 'USER',
+      status: 'PENDING',
+    });
+
+    // Notify Super Admins
+    const superAdmins = await User.find({ role: 'SUPER_ADMIN' });
+    for (const sa of superAdmins) {
+      await Notification.create({
+        userId: sa._id,
+        title: 'New Account Pending Approval',
+        message: `User ${user.name} (${user.email || user.phone}) registered and is awaiting approval.`,
+        type: 'ACCOUNT_STATUS',
+        metadata: { applicantId: user._id },
+      });
+    }
+
+    // Audit log
+    await AuditLog.create({
+      action: 'USER_REGISTERED',
+      targetType: 'USER',
+      targetId: user._id.toString(),
+      details: { name: user.name, email: user.email, phone: user.phone },
+      ipAddress: req.ip,
+    });
+
+    res.status(201).json({
+      success: true,
+      status: 'PENDING',
+      message: 'Your account has been registered successfully. Please wait for administrator approval.',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Login user & get token
+// @route   POST /api/auth/login
+// @access  Public
+exports.login = async (req, res, next) => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide Email or Phone number and Password',
+      });
+    }
+
+    const cleanIdentifier = identifier.trim();
+
+    // Query user by email OR phone
+    const user = await User.findOne({
+      $or: [
+        { email: cleanIdentifier.toLowerCase() },
+        { phone: cleanIdentifier },
+      ],
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid login credentials',
+      });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid login credentials',
+      });
+    }
+
+    const token = generateToken(user._id);
+
+    // Record login audit log
+    await AuditLog.create({
+      performedBy: user._id,
+      performedByName: user.name,
+      action: 'USER_LOGIN',
+      targetType: 'AUTH',
+      targetId: user._id.toString(),
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+        rejectionReason: user.rejectionReason,
+        suspensionReason: user.suspensionReason,
+        notificationPreferences: user.notificationPreferences,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get current user profile
+// @route   GET /api/auth/me
+// @access  Private
+exports.getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select('-passwordHash');
+    res.json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, email, phone, notificationPreferences } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (name) user.name = name.trim();
+    if (email && email.toLowerCase().trim() !== user.email) {
+      const emailExists = await User.findOne({
+        email: email.toLowerCase().trim(),
+        _id: { $ne: user._id },
+      });
+      if (emailExists) {
+        return res.status(400).json({ success: false, message: 'Email already in use' });
+      }
+      user.email = email.toLowerCase().trim();
+    }
+    if (phone && phone.trim() !== user.phone) {
+      const phoneExists = await User.findOne({
+        phone: phone.trim(),
+        _id: { $ne: user._id },
+      });
+      if (phoneExists) {
+        return res.status(400).json({ success: false, message: 'Phone already in use' });
+      }
+      user.phone = phone.trim();
+    }
+
+    if (notificationPreferences) {
+      user.notificationPreferences = {
+        ...user.notificationPreferences,
+        ...notificationPreferences,
+      };
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+        notificationPreferences: user.notificationPreferences,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Change password
+// @route   PUT /api/auth/change-password
+// @access  Private
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide both current and new password',
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long',
+      });
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New passwords do not match',
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    const isMatch = await user.matchPassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password does not match records',
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    await AuditLog.create({
+      performedBy: user._id,
+      performedByName: user.name,
+      action: 'PASSWORD_CHANGED',
+      targetType: 'AUTH',
+      targetId: user._id.toString(),
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
