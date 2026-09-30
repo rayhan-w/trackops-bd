@@ -35,7 +35,7 @@ export default function Sidebar({ isOpen, onClose, unreadCount = 0 }) {
   const navItemClass = ({ isActive }) =>
     `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
       isActive
-        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/25 font-semibold'
         : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
     }`;
 
@@ -50,20 +50,20 @@ export default function Sidebar({ isOpen, onClose, unreadCount = 0 }) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#0E1C36] text-slate-200 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#0F172A] text-slate-200 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
         <div className="h-16 px-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-400 flex items-center justify-center shadow-lg shadow-orange-500/25">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="font-extrabold text-base tracking-tight text-white">
-                  TrackOps <span className="text-blue-400">BD</span>
+                  TrackOps <span className="text-orange-400">BD</span>
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 font-mono block">
@@ -79,7 +79,7 @@ export default function Sidebar({ isOpen, onClose, unreadCount = 0 }) {
           <NavLink
             to="/links/new"
             onClick={onClose}
-            className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-600/25 transition-all hover:scale-[1.02]"
+            className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-gradient-to-r from-[#FF7A50] to-[#FF5216] hover:from-[#FF8962] hover:to-[#E6450A] text-white rounded-xl text-sm font-semibold shadow-lg shadow-orange-500/25 transition-all hover:scale-[1.02]"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Create New Link</span>
@@ -101,7 +101,7 @@ export default function Sidebar({ isOpen, onClose, unreadCount = 0 }) {
 
             <NavLink to="/visitor-activity" onClick={onClose} className={navItemClass}>
               <div className="flex items-center space-x-3">
-                <Compass className="w-4 h-4 text-emerald-400" />
+                <Compass className="w-4 h-4 text-orange-400" />
                 <span>Visitor Activity</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
@@ -121,7 +121,7 @@ export default function Sidebar({ isOpen, onClose, unreadCount = 0 }) {
                 <span>Notifications</span>
               </div>
               {unreadCount > 0 ? (
-                <span className="bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-orange-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
                   {unreadCount}
                 </span>
               ) : (

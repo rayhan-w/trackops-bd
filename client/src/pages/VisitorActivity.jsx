@@ -235,7 +235,7 @@ export default function VisitorActivity() {
               <button
                 type="button"
                 onClick={() => handleOpenIpModal('103.199.109.91')}
-                className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs rounded-xl border border-blue-200 transition-colors flex items-center space-x-1.5"
+                className="px-3.5 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-xl border border-orange-200 transition-colors flex items-center space-x-1.5"
               >
                 <Crosshair className="w-3.5 h-3.5" />
                 <span>IP Request</span>
@@ -384,11 +384,11 @@ export default function VisitorActivity() {
                           {/* 5. ACTIONS: Check IP, Details, Camera, Location (Matches Screenshot 2) */}
                           <td className="py-4 px-6 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end space-x-2">
-                              {/* Blue Check IP Button */}
+                              {/* Orange Check IP Button */}
                               <button
                                 type="button"
                                 onClick={() => handleOpenIpModal(ip)}
-                                className="px-3 py-1.5 bg-[#4338ca] hover:bg-[#3730a3] text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center space-x-1"
+                                className="px-3.5 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-xs rounded-full shadow-2xs transition-all flex items-center space-x-1"
                               >
                                 <span className="text-[10px]">•</span>
                                 <span>Check IP</span>

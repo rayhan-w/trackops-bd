@@ -208,7 +208,7 @@ export default function Dashboard() {
             </div>
             <Link
               to="/links/new"
-              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md shadow-blue-600/25 flex items-center space-x-2 transition-all hover:scale-[1.02]"
+              className="bg-gradient-to-r from-[#FF7A50] to-[#FF5216] hover:from-[#FF8962] hover:to-[#E6450A] text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-md shadow-orange-500/25 flex items-center space-x-2 transition-all hover:scale-[1.02]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>New Link</span>
@@ -289,7 +289,7 @@ export default function Dashboard() {
                     {/* Link Info */}
                     <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-base text-[#0B192C] group-hover:text-blue-600 transition-colors">
+                        <span className="font-bold text-base text-[#0F172A] group-hover:text-orange-600 transition-colors">
                           {link.title}
                         </span>
                         <span
@@ -303,20 +303,20 @@ export default function Dashboard() {
                         >
                           {link.status}
                         </span>
-                        <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200 font-semibold">
+                        <span className="text-[10px] font-mono bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200 font-semibold">
                           CASE: {link.caseReference || 'UNASSIGNED'}
                         </span>
                       </div>
 
                       {/* URLs */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs font-mono">
-                        <div className="flex items-center space-x-1.5 text-blue-600 font-bold bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100 w-fit">
+                        <div className="flex items-center space-x-1.5 text-orange-600 font-bold bg-orange-50/80 px-2.5 py-1 rounded-lg border border-orange-100 w-fit">
                           <LinkIcon className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate max-w-xs">{fullUrl}</span>
                         </div>
-                        <div className="text-slate-400 truncate flex items-center space-x-1">
+                        <div className="text-stone-400 truncate flex items-center space-x-1">
                           <span>Target:</span>
-                          <span className="text-slate-600 truncate max-w-xs">{link.destinationUrl}</span>
+                          <span className="text-stone-600 truncate max-w-xs">{link.destinationUrl}</span>
                         </div>
                       </div>
 

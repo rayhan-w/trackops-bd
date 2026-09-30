@@ -65,31 +65,31 @@ export default function Login() {
       <Navbar onOpenDemoModal={() => setDemoModalOpen(true)} />
 
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-xl">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-stone-200/80 shadow-xl">
           {/* Brand header */}
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/25">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-orange-500/25">
               <Shield className="w-6 h-6" />
             </div>
-            <h2 className="text-2xl font-extrabold text-[#0B192C] tracking-tight">
+            <h2 className="text-2xl font-extrabold text-[#0F172A] tracking-tight">
               Portal Sign In
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-stone-500 mt-1">
               Authorized access to TrackOps BD Link & Consent Hub
             </p>
           </div>
 
           {/* Quick Demo Credentials Pill */}
-          <div className="mb-6 p-3 bg-indigo-50/80 border border-indigo-200 rounded-2xl">
-            <div className="flex items-center justify-between text-xs text-indigo-900 font-semibold mb-2">
+          <div className="mb-6 p-3 bg-orange-50/80 border border-orange-200/80 rounded-2xl">
+            <div className="flex items-center justify-between text-xs text-orange-950 font-semibold mb-2">
               <span className="flex items-center space-x-1.5">
-                <Key className="w-3.5 h-3.5 text-indigo-600" />
+                <Key className="w-3.5 h-3.5 text-orange-500" />
                 <span>Quick-Select Demo Account:</span>
               </span>
               <button
                 type="button"
                 onClick={() => setDemoModalOpen(true)}
-                className="text-[11px] text-blue-600 hover:underline"
+                className="text-[11px] text-orange-600 font-bold hover:underline"
               >
                 View Details
               </button>
@@ -98,21 +98,21 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => handleFillCredentials('superadmin@trackops.local', 'DemoSuperAdmin@2026')}
-                className="py-1 px-2 rounded-lg bg-white border border-indigo-200 text-purple-700 hover:bg-purple-50 font-bold text-center truncate shadow-sm"
+                className="py-1 px-2 rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 font-bold text-center truncate shadow-2xs"
               >
                 Super Admin
               </button>
               <button
                 type="button"
                 onClick={() => handleFillCredentials('admin@trackops.local', 'DemoAdmin@2026')}
-                className="py-1 px-2 rounded-lg bg-white border border-indigo-200 text-blue-700 hover:bg-blue-50 font-bold text-center truncate shadow-sm"
+                className="py-1 px-2 rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 font-bold text-center truncate shadow-2xs"
               >
                 Admin
               </button>
               <button
                 type="button"
                 onClick={() => handleFillCredentials('officer@trackops.local', 'DemoOfficer@2026')}
-                className="py-1 px-2 rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold text-center truncate shadow-sm"
+                className="py-1 px-2 rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 font-bold text-center truncate shadow-2xs"
               >
                 Officer
               </button>
@@ -170,7 +170,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-600/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                className="w-full py-3.5 bg-gradient-to-r from-[#FF7A50] to-[#FF5216] hover:from-[#FF8962] hover:to-[#E6450A] text-white font-semibold text-xs sm:text-sm rounded-full shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -183,9 +183,9 @@ export default function Login() {
               </button>
             </div>
 
-            <div className="text-center pt-3 text-xs text-slate-500">
+            <div className="text-center pt-3 text-xs text-stone-500">
               Need an officer account?{' '}
-              <Link to="/register" className="text-blue-600 font-semibold hover:underline">
+              <Link to="/register" className="text-orange-600 font-bold hover:underline">
                 Register here
               </Link>
             </div>

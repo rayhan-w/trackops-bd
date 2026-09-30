@@ -4,7 +4,11 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased font-sans;
+    @apply bg-[#FBFBFA] text-[#0F172A] antialiased font-sans;
+  }
+
+  ::selection {
+    @apply bg-orange-100 text-orange-900;
   }
 }
 
@@ -14,18 +18,31 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f8f6f0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #e2ddd3;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #f97316;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(251, 146, 60, 0.15);
+}
+
+.orange-gradient-btn {
+  background: linear-gradient(135deg, #FF7A50 0%, #FF5216 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px -4px rgba(255, 87, 34, 0.35);
+  transition: all 0.2s ease;
+}
+
+.orange-gradient-btn:hover {
+  background: linear-gradient(135deg, #FF8962 0%, #E6450A 100%);
+  box-shadow: 0 10px 24px -3px rgba(255, 87, 34, 0.45);
+  transform: translateY(-1px);
 }

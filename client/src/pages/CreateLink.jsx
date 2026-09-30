@@ -253,7 +253,7 @@ export default function CreateLink() {
                       <button
                         type="button"
                         onClick={generateRandomCode}
-                        className="text-[11px] text-blue-600 hover:text-blue-700 flex items-center space-x-1 font-semibold"
+                        className="text-[11px] text-orange-600 hover:text-orange-700 flex items-center space-x-1 font-bold"
                       >
                         <Shuffle className="w-3 h-3" />
                         <span>Generate Random</span>
@@ -356,7 +356,7 @@ export default function CreateLink() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-600/25 transition-all flex items-center justify-center space-x-2"
+                    className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-[#FF7A50] to-[#FF5216] hover:from-[#FF8962] hover:to-[#E6450A] text-white font-semibold text-xs sm:text-sm rounded-full shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all flex items-center justify-center space-x-2"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

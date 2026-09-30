@@ -68,7 +68,7 @@ export default function DashboardHeader({ title, subtitle, onToggleSidebar, unre
                 <Link
                   to="/notifications"
                   onClick={() => setNotificationsOpen(false)}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-xs text-orange-600 hover:text-orange-700 font-semibold"
                 >
                   View All
                 </Link>
@@ -83,7 +83,7 @@ export default function DashboardHeader({ title, subtitle, onToggleSidebar, unre
                     <div
                       key={n._id}
                       className={`p-3 text-xs hover:bg-slate-50 transition-colors ${
-                        !n.isRead ? 'bg-blue-50/50' : ''
+                        !n.isRead ? 'bg-orange-50/50' : ''
                       }`}
                     >
                       <div className="font-semibold text-slate-800">{n.title}</div>
@@ -102,7 +102,7 @@ export default function DashboardHeader({ title, subtitle, onToggleSidebar, unre
         {/* Create Link Quick Action */}
         <Link
           to="/links/new"
-          className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-600/20 flex items-center space-x-1.5 transition-all hover:scale-[1.02]"
+          className="bg-gradient-to-r from-[#FF7A50] to-[#FF5216] hover:from-[#FF8962] hover:to-[#E6450A] text-white px-4 py-2 rounded-full text-xs sm:text-sm font-semibold shadow-md shadow-orange-500/25 flex items-center space-x-1.5 transition-all hover:scale-[1.02]"
         >
           <PlusCircle className="w-4 h-4" />
           <span className="hidden sm:inline">New Link</span>
