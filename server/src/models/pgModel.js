@@ -163,13 +163,22 @@ function createModel(tableName, methods = {}) {
 
         if (pool && !isFallback()) {
           try {
-            const res = await pool.query(`SELECT id, data, created_at, updated_at FROM ${tableName}`);
+            const res = await pool.query(`SELECT * FROM ${tableName}`);
             results = res.rows.map((r) => {
-              const d = typeof r.data === 'string' ? JSON.parse(r.data) : r.data;
-              d.id = r.id;
-              d._id = r.id;
-              d.createdAt = r.created_at;
-              d.updatedAt = r.updated_at;
+              const d = typeof r.data === 'string' ? (r.data ? JSON.parse(r.data) : {}) : (r.data || {});
+              d.id = r.id || d.id;
+              d._id = d.id;
+              if (r.name) d.name = r.name;
+              if (r.email) d.email = r.email;
+              if (r.phone) d.phone = r.phone;
+              if (r.password_hash) d.passwordHash = r.password_hash;
+              if (r.role) d.role = r.role;
+              if (r.status) d.status = r.status;
+              if (r.short_code) d.shortCode = r.short_code;
+              if (r.owner_id) d.ownerId = r.owner_id;
+              if (r.case_reference) d.caseReference = r.case_reference;
+              d.createdAt = r.created_at || d.createdAt;
+              d.updatedAt = r.updated_at || d.updatedAt;
               return d;
             });
           } catch (err) {

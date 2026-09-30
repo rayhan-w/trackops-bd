@@ -32,10 +32,10 @@ const initSchema = async (client) => {
   const schemaSql = `
     CREATE TABLE IF NOT EXISTS users (
       id VARCHAR(64) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE,
+      name VARCHAR(255),
+      email VARCHAR(255),
       phone VARCHAR(50),
-      password_hash VARCHAR(255) NOT NULL,
+      password_hash VARCHAR(255),
       role VARCHAR(50) DEFAULT 'USER',
       status VARCHAR(50) DEFAULT 'PENDING',
       approved_by VARCHAR(64),
@@ -47,6 +47,8 @@ const initSchema = async (client) => {
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+    ALTER TABLE users ALTER COLUMN name DROP NOT NULL;
+    ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 
     CREATE TABLE IF NOT EXISTS links (
       id VARCHAR(64) PRIMARY KEY,
@@ -161,10 +163,7 @@ const initSchema = async (client) => {
 
 const seedDefaultAccounts = async (client) => {
   try {
-    const res = await client.query('SELECT COUNT(*) as count FROM users');
-    if (parseInt(res.rows[0].count, 10) === 0) {
-      console.log('[PostgreSQL] Seeding initial demo accounts...');
-      const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(10);
       const superAdminHash = await bcrypt.hash('DemoSuperAdmin@2026', salt);
       const adminHash = await bcrypt.hash('DemoAdmin@2026', salt);
       const officerHash = await bcrypt.hash('DemoOfficer@2026', salt);
@@ -173,25 +172,68 @@ const seedDefaultAccounts = async (client) => {
       const adminId = crypto.randomBytes(12).toString('hex');
       const officerId = crypto.randomBytes(12).toString('hex');
 
+      const superAdminDoc = {
+        id: superAdminId,
+        _id: superAdminId,
+        name: 'Super Administrator (CID Chief)',
+        email: 'superadmin@trackops.local',
+        phone: '+8801700000001',
+        passwordHash: superAdminHash,
+        role: 'SUPER_ADMIN',
+        status: 'APPROVED',
+        approvedAt: new Date(),
+        notificationPreferences: { emailAlerts: true, linkClicks: true, systemUpdates: true },
+      };
+
+      const adminDoc = {
+        id: adminId,
+        _id: adminId,
+        name: 'Inspector Admin Rahman',
+        email: 'admin@trackops.local',
+        phone: '+8801700000002',
+        passwordHash: adminHash,
+        role: 'ADMIN',
+        status: 'APPROVED',
+        approvedBy: superAdminId,
+        approvedAt: new Date(),
+        notificationPreferences: { emailAlerts: true, linkClicks: true, systemUpdates: true },
+      };
+
+      const officerDoc = {
+        id: officerId,
+        _id: officerId,
+        name: 'Sub-Inspector Tanvir Ahmed',
+        email: 'officer@trackops.local',
+        phone: '+8801819000003',
+        passwordHash: officerHash,
+        role: 'USER',
+        status: 'APPROVED',
+        approvedBy: adminId,
+        approvedAt: new Date(),
+        notificationPreferences: { emailAlerts: true, linkClicks: true, systemUpdates: true },
+      };
+
       await client.query(
-        `INSERT INTO users (id, name, email, phone, password_hash, role, status, approved_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
-        [superAdminId, 'Super Administrator (CID Chief)', 'superadmin@trackops.local', '+8801700000001', superAdminHash, 'SUPER_ADMIN', 'APPROVED']
+        `INSERT INTO users (id, name, email, phone, password_hash, role, status, data, approved_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+         ON CONFLICT (email) DO UPDATE SET password_hash = $5, data = $8`,
+        [superAdminId, superAdminDoc.name, superAdminDoc.email, superAdminDoc.phone, superAdminHash, superAdminDoc.role, superAdminDoc.status, JSON.stringify(superAdminDoc)]
       );
 
       await client.query(
-        `INSERT INTO users (id, name, email, phone, password_hash, role, status, approved_by, approved_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
-        [adminId, 'Inspector Admin Rahman', 'admin@trackops.local', '+8801700000002', adminHash, 'ADMIN', 'APPROVED', superAdminId]
+        `INSERT INTO users (id, name, email, phone, password_hash, role, status, approved_by, data, approved_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+         ON CONFLICT (email) DO UPDATE SET password_hash = $5, data = $9`,
+        [adminId, adminDoc.name, adminDoc.email, adminDoc.phone, adminHash, adminDoc.role, adminDoc.status, superAdminId, JSON.stringify(adminDoc)]
       );
 
       await client.query(
-        `INSERT INTO users (id, name, email, phone, password_hash, role, status, approved_by, approved_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
-        [officerId, 'Sub-Inspector Tanvir Ahmed', 'officer@trackops.local', '+8801819000003', officerHash, 'USER', 'APPROVED', adminId]
+        `INSERT INTO users (id, name, email, phone, password_hash, role, status, approved_by, data, approved_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+         ON CONFLICT (email) DO UPDATE SET password_hash = $5, data = $9`,
+        [officerId, officerDoc.name, officerDoc.email, officerDoc.phone, officerHash, officerDoc.role, officerDoc.status, adminId, JSON.stringify(officerDoc)]
       );
       console.log('[PostgreSQL] Initial demo accounts created successfully.');
-    }
   } catch (err) {
     console.warn('[PostgreSQL Seed Warning]:', err.message);
   }

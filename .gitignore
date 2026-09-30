@@ -53,3 +53,5 @@ desktop.ini
 coverage/
 scratch/
 .gemini/
+
+.vercel
