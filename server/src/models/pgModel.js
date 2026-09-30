@@ -52,7 +52,14 @@ function matchDoc(doc, query) {
       continue;
     }
 
-    const docVal = doc[key] !== undefined ? doc[key] : (key === '_id' ? doc.id : undefined);
+    let docVal = doc[key];
+    if (docVal === undefined) {
+      if (key === '_id' || key === 'id') docVal = doc.id || doc._id;
+      else if (key === 'shortCode' || key === 'short_code') docVal = doc.shortCode || doc.short_code;
+      else if (key === 'ownerId' || key === 'owner_id') docVal = doc.ownerId || doc.owner_id;
+      else if (key === 'linkId' || key === 'link_id') docVal = doc.linkId || doc.link_id;
+      else if (key === 'caseReference' || key === 'case_reference') docVal = doc.caseReference || doc.case_reference;
+    }
 
     if (value instanceof RegExp) {
       if (!value.test(String(docVal || ''))) return false;
@@ -97,19 +104,32 @@ function sortDocs(docs, sortSpec) {
   });
 }
 
-function decorateDoc(doc, methods = {}) {
+function decorateDoc(doc, methods = {}, model = null) {
   if (!doc) return null;
   const wrapped = { ...doc };
   wrapped._id = wrapped.id || wrapped._id;
   wrapped.id = wrapped._id;
 
   wrapped.toObject = function () {
-    return { ...wrapped };
+    const copy = { ...this };
+    delete copy.save;
+    delete copy.toObject;
+    return copy;
   };
 
   for (const [name, fn] of Object.entries(methods)) {
     wrapped[name] = fn.bind(wrapped);
   }
+
+  wrapped.save = async function () {
+    if (model) {
+      const updated = await model.findByIdAndUpdate(this.id, this);
+      if (updated) {
+        Object.assign(this, updated);
+      }
+    }
+    return this;
+  };
 
   return wrapped;
 }
@@ -134,26 +154,222 @@ function createModel(tableName, methods = {}) {
 
       if (pool && !isFallback()) {
         try {
-          const res = await pool.query(
-            `INSERT INTO ${tableName} (id, data, created_at, updated_at)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = $4
-             RETURNING *`,
-            [id, JSON.stringify(doc), doc.createdAt, doc.updatedAt]
-          );
-          const saved = res.rows[0].data || doc;
-          saved.id = res.rows[0].id;
-          saved._id = res.rows[0].id;
-          return decorateDoc(saved, methods);
+          let res;
+          if (tableName === 'links') {
+            res = await pool.query(
+              `INSERT INTO links (
+                id, owner_id, destination_url, short_code, domain, title, description,
+                case_reference, status, expiration_date, requires_consent_notice,
+                clicks, unique_visits, metadata, data, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+              ON CONFLICT (id) DO UPDATE SET
+                owner_id = EXCLUDED.owner_id,
+                destination_url = EXCLUDED.destination_url,
+                short_code = EXCLUDED.short_code,
+                domain = EXCLUDED.domain,
+                title = EXCLUDED.title,
+                description = EXCLUDED.description,
+                case_reference = EXCLUDED.case_reference,
+                status = EXCLUDED.status,
+                expiration_date = EXCLUDED.expiration_date,
+                requires_consent_notice = EXCLUDED.requires_consent_notice,
+                clicks = EXCLUDED.clicks,
+                unique_visits = EXCLUDED.unique_visits,
+                metadata = EXCLUDED.metadata,
+                data = EXCLUDED.data,
+                updated_at = EXCLUDED.updated_at
+              RETURNING *`,
+              [
+                id,
+                doc.ownerId || doc.owner_id || null,
+                doc.destinationUrl || doc.destination_url || '',
+                doc.shortCode || doc.short_code || '',
+                doc.domain || 'trackops.link',
+                doc.title || 'Untitled Link',
+                doc.description || '',
+                doc.caseReference || doc.case_reference || 'CASE-GENERAL',
+                doc.status || 'ACTIVE',
+                doc.expirationDate ? new Date(doc.expirationDate) : null,
+                doc.requiresConsentNotice !== undefined ? doc.requiresConsentNotice : true,
+                Number(doc.clicks || 0),
+                Number(doc.uniqueVisits || 0),
+                JSON.stringify(doc.metadata || {}),
+                JSON.stringify(doc),
+                doc.createdAt,
+                doc.updatedAt,
+              ]
+            );
+          } else if (tableName === 'link_visits') {
+            res = await pool.query(
+              `INSERT INTO link_visits (
+                id, link_id, owner_id, visitor_reference_id, consent_record_id, consent_status,
+                location_consent_status, camera_consent_status, camera_status, voluntarily_shared_location,
+                latitude, longitude, accuracy, voluntarily_shared_camera, camera_snapshot,
+                browser_info_shared, browser_info, visitor_session_id, ip_hash, ip_address,
+                ipv4, ipv6, internal_ip, referrer, location_source, ip_intelligence,
+                data, timestamp, visit_timestamp, consent_timestamp, created_at, updated_at
+              ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+                $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
+                $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32
+              )
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
+              RETURNING *`,
+              [
+                id,
+                doc.linkId || doc.link_id || null,
+                doc.ownerId || doc.owner_id || null,
+                doc.visitorReferenceId || doc.visitor_reference_id || 'VIS-TEMP',
+                doc.consentRecordId || doc.consent_record_id || null,
+                doc.consentStatus || doc.consent_status || 'SKIPPED',
+                doc.locationConsentStatus || 'Not Requested',
+                doc.cameraConsentStatus || 'Not Requested',
+                doc.cameraStatus || 'Unavailable',
+                Boolean(doc.voluntarilySharedLocation),
+                doc.latitude !== null && doc.latitude !== undefined ? Number(doc.latitude) : null,
+                doc.longitude !== null && doc.longitude !== undefined ? Number(doc.longitude) : null,
+                doc.accuracy !== null && doc.accuracy !== undefined ? Number(doc.accuracy) : null,
+                Boolean(doc.voluntarilySharedCamera),
+                doc.cameraSnapshot || null,
+                Boolean(doc.browserInfoShared),
+                JSON.stringify(doc.browserInfo || {}),
+                doc.visitorSessionId || 'SESSION-TEMP',
+                doc.ipHash || null,
+                doc.ipAddress || '103.199.109.91',
+                doc.ipv4 || '103.199.109.91',
+                doc.ipv6 || 'N/A',
+                doc.internalIp || '::ffff:10.0.1.6',
+                doc.referrer || 'https://protidinernews.xyz/',
+                doc.locationSource || 'IP (approximate)',
+                JSON.stringify(doc.ipIntelligence || {}),
+                JSON.stringify(doc),
+                doc.timestamp || doc.createdAt,
+                doc.visitTimestamp || doc.createdAt,
+                doc.consentTimestamp || doc.createdAt,
+                doc.createdAt,
+                doc.updatedAt,
+              ]
+            );
+          } else if (tableName === 'consent_records') {
+            res = await pool.query(
+              `INSERT INTO consent_records (
+                id, link_id, visitor_session_id, consent_status, permission_type,
+                location_granted, camera_granted, browser_info_granted, notice_acknowledged,
+                anonymized_ip, user_agent, data, timestamp, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
+              RETURNING *`,
+              [
+                id,
+                doc.linkId || doc.link_id || null,
+                doc.visitorSessionId || 'SESSION-TEMP',
+                doc.consentStatus || 'SKIPPED',
+                doc.permissionType || 'GENERAL_CONSENT',
+                Boolean(doc.locationGranted),
+                Boolean(doc.cameraGranted),
+                Boolean(doc.browserInfoGranted),
+                Boolean(doc.noticeAcknowledged !== false),
+                doc.anonymizedIp || null,
+                doc.userAgent || '',
+                JSON.stringify(doc),
+                doc.timestamp || doc.createdAt,
+                doc.createdAt,
+                doc.updatedAt,
+              ]
+            );
+          } else if (tableName === 'notifications') {
+            res = await pool.query(
+              `INSERT INTO notifications (
+                id, user_id, title, message, type, metadata, data, is_read, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
+              RETURNING *`,
+              [
+                id,
+                doc.userId || doc.user_id || null,
+                doc.title || '',
+                doc.message || '',
+                doc.type || 'SYSTEM_UPDATE',
+                JSON.stringify(doc.metadata || {}),
+                JSON.stringify(doc),
+                Boolean(doc.isRead),
+                doc.createdAt,
+                doc.updatedAt,
+              ]
+            );
+          } else if (tableName === 'audit_logs') {
+            res = await pool.query(
+              `INSERT INTO audit_logs (
+                id, performed_by, performed_by_name, action, target_type, target_id, details, data, ip_address, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
+              RETURNING *`,
+              [
+                id,
+                doc.performedBy || doc.performed_by || null,
+                doc.performedByName || doc.performed_by_name || 'SYSTEM',
+                doc.action || 'GENERAL_ACTION',
+                doc.targetType || doc.target_type || 'SYSTEM',
+                doc.targetId || doc.target_id || null,
+                JSON.stringify(doc.details || {}),
+                JSON.stringify(doc),
+                doc.ipAddress || null,
+                doc.createdAt,
+                doc.updatedAt,
+              ]
+            );
+          } else if (tableName === 'users') {
+            res = await pool.query(
+              `INSERT INTO users (
+                id, name, email, phone, password_hash, role, status, approved_by, approved_at,
+                notification_preferences, data, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+              ON CONFLICT (email) DO UPDATE SET
+                password_hash = EXCLUDED.password_hash,
+                role = EXCLUDED.role,
+                status = EXCLUDED.status,
+                data = EXCLUDED.data,
+                updated_at = EXCLUDED.updated_at
+              RETURNING *`,
+              [
+                id,
+                doc.name || '',
+                doc.email || '',
+                doc.phone || '',
+                doc.passwordHash || doc.password_hash || '',
+                doc.role || 'USER',
+                doc.status || 'PENDING',
+                doc.approvedBy || doc.approved_by || null,
+                doc.approvedAt || null,
+                JSON.stringify(doc.notificationPreferences || {}),
+                JSON.stringify(doc),
+                doc.createdAt,
+                doc.updatedAt,
+              ]
+            );
+          } else {
+            res = await pool.query(
+              `INSERT INTO ${tableName} (id, data, created_at, updated_at)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = $4
+               RETURNING *`,
+              [id, JSON.stringify(doc), doc.createdAt, doc.updatedAt]
+            );
+          }
+
+          const saved = (res && res.rows && res.rows[0] && res.rows[0].data) || doc;
+          saved.id = (res && res.rows && res.rows[0] && res.rows[0].id) || id;
+          saved._id = saved.id;
+          return decorateDoc(saved, methods, model);
         } catch (err) {
-          console.warn(`[PG ${tableName} Create Falling Back]:`, err.message);
+          console.error(`[PG ${tableName} Create Error]:`, err.message);
         }
       }
 
       // Memory fallback
       const store = memoryStore[storeKey] || (memoryStore[storeKey] = new Map());
       store.set(id, doc);
-      return decorateDoc(doc, methods);
+      return decorateDoc(doc, methods, model);
     },
 
     find(query = {}) {
@@ -168,21 +384,34 @@ function createModel(tableName, methods = {}) {
               const d = typeof r.data === 'string' ? (r.data ? JSON.parse(r.data) : {}) : (r.data || {});
               d.id = r.id || d.id;
               d._id = d.id;
-              if (r.name) d.name = r.name;
-              if (r.email) d.email = r.email;
-              if (r.phone) d.phone = r.phone;
-              if (r.password_hash) d.passwordHash = r.password_hash;
-              if (r.role) d.role = r.role;
-              if (r.status) d.status = r.status;
-              if (r.short_code) d.shortCode = r.short_code;
-              if (r.owner_id) d.ownerId = r.owner_id;
-              if (r.case_reference) d.caseReference = r.case_reference;
+              if (r.name !== undefined && r.name !== null) d.name = r.name;
+              if (r.email !== undefined && r.email !== null) d.email = r.email;
+              if (r.phone !== undefined && r.phone !== null) d.phone = r.phone;
+              if (r.password_hash !== undefined && r.password_hash !== null) d.passwordHash = r.password_hash;
+              if (r.role !== undefined && r.role !== null) d.role = r.role;
+              if (r.status !== undefined && r.status !== null) d.status = r.status;
+              if (r.short_code !== undefined && r.short_code !== null) d.shortCode = r.short_code;
+              if (r.owner_id !== undefined && r.owner_id !== null) d.ownerId = r.owner_id;
+              if (r.destination_url !== undefined && r.destination_url !== null) d.destinationUrl = r.destination_url;
+              if (r.domain !== undefined && r.domain !== null) d.domain = r.domain;
+              if (r.title !== undefined && r.title !== null) d.title = r.title;
+              if (r.description !== undefined && r.description !== null) d.description = r.description;
+              if (r.case_reference !== undefined && r.case_reference !== null) d.caseReference = r.case_reference;
+              if (r.clicks !== undefined && r.clicks !== null) d.clicks = Number(r.clicks);
+              if (r.unique_visits !== undefined && r.unique_visits !== null) d.uniqueVisits = Number(r.unique_visits);
+              if (r.expiration_date !== undefined) d.expirationDate = r.expiration_date;
+              if (r.requires_consent_notice !== undefined && r.requires_consent_notice !== null) {
+                d.requiresConsentNotice = r.requires_consent_notice;
+              }
+              if (r.link_id !== undefined && r.link_id !== null) d.linkId = r.link_id;
+              if (r.visitor_reference_id !== undefined && r.visitor_reference_id !== null) d.visitorReferenceId = r.visitor_reference_id;
+              if (r.visitor_session_id !== undefined && r.visitor_session_id !== null) d.visitorSessionId = r.visitor_session_id;
               d.createdAt = r.created_at || d.createdAt;
               d.updatedAt = r.updated_at || d.updatedAt;
               return d;
             });
           } catch (err) {
-            console.warn(`[PG ${tableName} Find Falling Back]:`, err.message);
+            console.error(`[PG ${tableName} Find Error]:`, err.message);
             const store = memoryStore[storeKey] || new Map();
             results = Array.from(store.values());
           }
@@ -216,14 +445,14 @@ function createModel(tableName, methods = {}) {
                 const userStore = memoryStore.users || new Map();
                 let userObj = userStore.get(String(refId));
                 if (userObj) {
-                  item[pop.field] = decorateDoc(userObj);
+                  item[pop.field] = decorateDoc(userObj, {}, null);
                 }
               }
             }
           }
         }
 
-        return filtered.map((d) => decorateDoc(d, methods));
+        return filtered.map((d) => decorateDoc(d, methods, model));
       });
     },
 
@@ -248,7 +477,7 @@ function createModel(tableName, methods = {}) {
               const userStore = memoryStore.users || new Map();
               const userObj = userStore.get(String(refId));
               if (userObj) {
-                doc[pop.field] = decorateDoc(userObj);
+                doc[pop.field] = decorateDoc(userObj, {}, null);
               }
             }
           }
@@ -273,18 +502,80 @@ function createModel(tableName, methods = {}) {
       const pool = getPool();
       if (pool && !isFallback()) {
         try {
-          await pool.query(
-            `UPDATE ${tableName} SET data = $2, updated_at = $3 WHERE id = $1`,
-            [stringId, JSON.stringify(updated), updated.updatedAt]
-          );
+          if (tableName === 'links') {
+            await pool.query(
+              `UPDATE links SET
+                 owner_id = COALESCE($2, owner_id),
+                 destination_url = COALESCE($3, destination_url),
+                 short_code = COALESCE($4, short_code),
+                 domain = COALESCE($5, domain),
+                 title = COALESCE($6, title),
+                 description = COALESCE($7, description),
+                 case_reference = COALESCE($8, case_reference),
+                 status = COALESCE($9, status),
+                 expiration_date = $10,
+                 requires_consent_notice = COALESCE($11, requires_consent_notice),
+                 clicks = COALESCE($12, clicks),
+                 unique_visits = COALESCE($13, unique_visits),
+                 data = $14,
+                 updated_at = $15
+               WHERE id = $1`,
+              [
+                stringId,
+                updated.ownerId || updated.owner_id || null,
+                updated.destinationUrl || updated.destination_url || null,
+                updated.shortCode || updated.short_code || null,
+                updated.domain || null,
+                updated.title || null,
+                updated.description || null,
+                updated.caseReference || updated.case_reference || null,
+                updated.status || null,
+                updated.expirationDate ? new Date(updated.expirationDate) : null,
+                updated.requiresConsentNotice !== undefined ? updated.requiresConsentNotice : null,
+                updated.clicks !== undefined ? Number(updated.clicks) : null,
+                updated.uniqueVisits !== undefined ? Number(updated.uniqueVisits) : null,
+                JSON.stringify(updated),
+                updated.updatedAt,
+              ]
+            );
+          } else if (tableName === 'users') {
+            await pool.query(
+              `UPDATE users SET
+                 name = COALESCE($2, name),
+                 email = COALESCE($3, email),
+                 phone = COALESCE($4, phone),
+                 password_hash = COALESCE($5, password_hash),
+                 role = COALESCE($6, role),
+                 status = COALESCE($7, status),
+                 data = $8,
+                 updated_at = $9
+               WHERE id = $1`,
+              [
+                stringId,
+                updated.name || null,
+                updated.email || null,
+                updated.phone || null,
+                updated.passwordHash || updated.password_hash || null,
+                updated.role || null,
+                updated.status || null,
+                JSON.stringify(updated),
+                updated.updatedAt,
+              ]
+            );
+          } else {
+            await pool.query(
+              `UPDATE ${tableName} SET data = $2, updated_at = $3 WHERE id = $1`,
+              [stringId, JSON.stringify(updated), updated.updatedAt]
+            );
+          }
         } catch (err) {
-          console.warn(`[PG ${tableName} Update Falling Back]:`, err.message);
+          console.error(`[PG ${tableName} Update Error]:`, err.message);
         }
       }
 
       const store = memoryStore[storeKey] || (memoryStore[storeKey] = new Map());
       store.set(stringId, updated);
-      return decorateDoc(updated, methods);
+      return decorateDoc(updated, methods, model);
     },
 
     async findOneAndUpdate(query, update, options = {}) {
@@ -308,7 +599,7 @@ function createModel(tableName, methods = {}) {
         try {
           await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [stringId]);
         } catch (err) {
-          console.warn(`[PG ${tableName} Delete Falling Back]:`, err.message);
+          console.error(`[PG ${tableName} Delete Error]:`, err.message);
         }
       }
 

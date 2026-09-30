@@ -26,6 +26,16 @@ const isValidUrl = (string) => {
   }
 };
 
+// Helper to determine active base URL for short links
+const getBaseUrl = (req) => {
+  if (process.env.BASE_SHORT_DOMAIN && !process.env.BASE_SHORT_DOMAIN.includes('localhost')) {
+    return process.env.BASE_SHORT_DOMAIN.replace(/\/+$/, '');
+  }
+  const host = req.get('host');
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  return `${protocol}://${host}`;
+};
+
 // @desc    Create a new short link
 // @route   POST /api/links
 // @access  Private (APPROVED users only)
@@ -116,7 +126,7 @@ exports.createLink = async (req, res, next) => {
       ipAddress: req.ip,
     });
 
-    const fullShortUrl = `${process.env.CLIENT_URL || process.env.BASE_SHORT_DOMAIN || process.env.CLIENT_ORIGIN || 'http://localhost:3000'}/l/${link.shortCode}`;
+    const fullShortUrl = `${getBaseUrl(req)}/l/${link.shortCode}`;
 
     res.status(201).json({
       success: true,
@@ -172,7 +182,7 @@ exports.getLinks = async (req, res, next) => {
       .skip(skip)
       .limit(Number(limit));
 
-    const baseUrl = process.env.CLIENT_URL || process.env.BASE_SHORT_DOMAIN || process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+    const baseUrl = getBaseUrl(req);
     const formattedLinks = links.map((link) => ({
       ...link.toObject(),
       fullShortUrl: `${baseUrl}/l/${link.shortCode}`,
@@ -231,7 +241,7 @@ exports.getLinkById = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Unauthorized link access' });
     }
 
-    const baseUrl = process.env.CLIENT_URL || process.env.BASE_SHORT_DOMAIN || process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+    const baseUrl = getBaseUrl(req);
 
     // Fetch recent visits
     const recentVisits = await LinkVisit.find({ linkId: link._id })

@@ -113,8 +113,7 @@ app.get('/api/health', (req, res) => {
 // Direct short link route: /l/:shortCode -> Redirects to client visitor consent page
 app.get('/l/:shortCode', (req, res) => {
   const { shortCode } = req.params;
-  const clientBase = process.env.CLIENT_URL || process.env.CLIENT_ORIGIN || 'http://localhost:3000';
-  res.redirect(`${clientBase}/v/${shortCode}`);
+  res.redirect(`/v/${encodeURIComponent(shortCode)}`);
 });
 
 // Centralized Error Handler

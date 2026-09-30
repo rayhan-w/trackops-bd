@@ -47,14 +47,15 @@ const initSchema = async (client) => {
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
-    ALTER TABLE users ALTER COLUMN name DROP NOT NULL;
-    ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ALTER COLUMN name DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
     CREATE TABLE IF NOT EXISTS links (
       id VARCHAR(64) PRIMARY KEY,
-      owner_id VARCHAR(64) NOT NULL,
-      destination_url TEXT NOT NULL,
-      short_code VARCHAR(100) UNIQUE NOT NULL,
+      owner_id VARCHAR(64),
+      destination_url TEXT,
+      short_code VARCHAR(100),
       domain VARCHAR(100) DEFAULT 'trackops.link',
       title VARCHAR(255) DEFAULT 'Untitled Link',
       description TEXT DEFAULT '',
@@ -65,15 +66,20 @@ const initSchema = async (client) => {
       clicks INTEGER DEFAULT 0,
       unique_visits INTEGER DEFAULT 0,
       metadata JSONB DEFAULT '{}'::jsonb,
+      data JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+    DO $$ BEGIN ALTER TABLE links ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE links ALTER COLUMN owner_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE links ALTER COLUMN destination_url DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE links ALTER COLUMN short_code DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
     CREATE TABLE IF NOT EXISTS link_visits (
       id VARCHAR(64) PRIMARY KEY,
-      link_id VARCHAR(64) NOT NULL,
-      owner_id VARCHAR(64) NOT NULL,
-      visitor_reference_id VARCHAR(100) NOT NULL,
+      link_id VARCHAR(64),
+      owner_id VARCHAR(64),
+      visitor_reference_id VARCHAR(100),
       consent_record_id VARCHAR(64),
       consent_status VARCHAR(50) DEFAULT 'SKIPPED',
       location_consent_status VARCHAR(50) DEFAULT 'Not Requested',
@@ -96,54 +102,74 @@ const initSchema = async (client) => {
       referrer TEXT DEFAULT 'https://protidinernews.xyz/',
       location_source VARCHAR(100) DEFAULT 'IP (approximate)',
       ip_intelligence JSONB DEFAULT '{}'::jsonb,
+      data JSONB DEFAULT '{}'::jsonb,
       timestamp TIMESTAMPTZ DEFAULT NOW(),
       visit_timestamp TIMESTAMPTZ DEFAULT NOW(),
       consent_timestamp TIMESTAMPTZ DEFAULT NOW(),
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+    DO $$ BEGIN ALTER TABLE link_visits ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE link_visits ALTER COLUMN link_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE link_visits ALTER COLUMN owner_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE link_visits ALTER COLUMN visitor_reference_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
     CREATE TABLE IF NOT EXISTS consent_records (
       id VARCHAR(64) PRIMARY KEY,
-      link_id VARCHAR(64) NOT NULL,
-      visitor_session_id VARCHAR(100) NOT NULL,
-      consent_status VARCHAR(50) NOT NULL,
-      permission_type VARCHAR(50) NOT NULL,
+      link_id VARCHAR(64),
+      visitor_session_id VARCHAR(100),
+      consent_status VARCHAR(50),
+      permission_type VARCHAR(50),
       location_granted BOOLEAN DEFAULT FALSE,
       camera_granted BOOLEAN DEFAULT FALSE,
       browser_info_granted BOOLEAN DEFAULT FALSE,
       notice_acknowledged BOOLEAN DEFAULT TRUE,
       anonymized_ip VARCHAR(100),
       user_agent TEXT,
+      data JSONB DEFAULT '{}'::jsonb,
       timestamp TIMESTAMPTZ DEFAULT NOW(),
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+    DO $$ BEGIN ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE consent_records ALTER COLUMN link_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE consent_records ALTER COLUMN visitor_session_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE consent_records ALTER COLUMN consent_status DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE consent_records ALTER COLUMN permission_type DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
     CREATE TABLE IF NOT EXISTS notifications (
       id VARCHAR(64) PRIMARY KEY,
-      user_id VARCHAR(64) NOT NULL,
-      title VARCHAR(255) NOT NULL,
-      message TEXT NOT NULL,
+      user_id VARCHAR(64),
+      title VARCHAR(255),
+      message TEXT,
       type VARCHAR(50) DEFAULT 'SYSTEM_UPDATE',
       metadata JSONB DEFAULT '{}'::jsonb,
+      data JSONB DEFAULT '{}'::jsonb,
       is_read BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+    DO $$ BEGIN ALTER TABLE notifications ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE notifications ALTER COLUMN user_id DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE notifications ALTER COLUMN title DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE notifications ALTER COLUMN message DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
     CREATE TABLE IF NOT EXISTS audit_logs (
       id VARCHAR(64) PRIMARY KEY,
       performed_by VARCHAR(64),
       performed_by_name VARCHAR(255) DEFAULT 'SYSTEM',
-      action VARCHAR(100) NOT NULL,
-      target_type VARCHAR(50) NOT NULL,
+      action VARCHAR(100),
+      target_type VARCHAR(50),
       target_id VARCHAR(100),
       details JSONB DEFAULT '{}'::jsonb,
+      data JSONB DEFAULT '{}'::jsonb,
       ip_address VARCHAR(100),
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+    DO $$ BEGIN ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE audit_logs ALTER COLUMN action DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE audit_logs ALTER COLUMN target_type DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
     CREATE TABLE IF NOT EXISTS telecom_integrations (
       id VARCHAR(64) PRIMARY KEY,
