@@ -110,13 +110,49 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Direct short link route: /l/:shortCode -> Redirects to client visitor consent page
+// Serve static frontend assets (JS/CSS built by Vite)
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Inline SPA shell — loaded once at startup, no runtime fs calls
+const SPA_HTML = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrackOps BD - Link Management &amp; Consent Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-CZ-HtnYh.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-2aFSgtcf.css">
+  </head>
+  <body class="bg-[#F8FAFC] text-slate-800 antialiased font-sans">
+    <div id="root"></div>
+  </body>
+</html>`;
+
+const sendSpa = (req, res) => res.setHeader('Content-Type', 'text/html; charset=utf-8').send(SPA_HTML);
+
+// Short link redirect
 app.get('/l/:shortCode', (req, res) => {
-  const { shortCode } = req.params;
-  // Redirect to the SPA visitor consent page (served by client service)
-  const clientBase = process.env.CLIENT_URL || '';
-  res.redirect(`${clientBase}/v/${encodeURIComponent(shortCode)}`);
+  res.redirect(`/v/${encodeURIComponent(req.params.shortCode)}`);
 });
+
+// SPA routes — all served with the React shell
+app.get([
+  '/v/:shortCode',
+  '/login', '/register', '/dashboard',
+  '/links', '/links/*',
+  '/visitor-activity', '/visitor-activity/*',
+  '/analytics', '/approval-pending',
+  '/account-suspended', '/account-rejected',
+  '/settings', '/notifications',
+  '/telecom-gateway', '/cell-converter',
+], sendSpa);
+
+// Root fallback
+app.get('/', sendSpa);
 
 // Centralized Error Handler
 app.use(errorHandler);
