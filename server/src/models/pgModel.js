@@ -381,31 +381,47 @@ function createModel(tableName, methods = {}) {
           try {
             const res = await pool.query(`SELECT * FROM ${tableName}`);
             results = res.rows.map((r) => {
-              const d = typeof r.data === 'string' ? (r.data ? JSON.parse(r.data) : {}) : (r.data || {});
+              // Start with JSON blob as base, then override with real column values
+              let d = {};
+              try {
+                d = typeof r.data === 'string' ? (r.data ? JSON.parse(r.data) : {}) : (r.data || {});
+              } catch (e) { d = {}; }
+
+              // Always override with actual column values (source of truth)
               d.id = r.id || d.id;
               d._id = d.id;
-              if (r.name !== undefined && r.name !== null) d.name = r.name;
-              if (r.email !== undefined && r.email !== null) d.email = r.email;
-              if (r.phone !== undefined && r.phone !== null) d.phone = r.phone;
-              if (r.password_hash !== undefined && r.password_hash !== null) d.passwordHash = r.password_hash;
-              if (r.role !== undefined && r.role !== null) d.role = r.role;
-              if (r.status !== undefined && r.status !== null) d.status = r.status;
-              if (r.short_code !== undefined && r.short_code !== null) d.shortCode = r.short_code;
-              if (r.owner_id !== undefined && r.owner_id !== null) d.ownerId = r.owner_id;
-              if (r.destination_url !== undefined && r.destination_url !== null) d.destinationUrl = r.destination_url;
-              if (r.domain !== undefined && r.domain !== null) d.domain = r.domain;
-              if (r.title !== undefined && r.title !== null) d.title = r.title;
-              if (r.description !== undefined && r.description !== null) d.description = r.description;
-              if (r.case_reference !== undefined && r.case_reference !== null) d.caseReference = r.case_reference;
-              if (r.clicks !== undefined && r.clicks !== null) d.clicks = Number(r.clicks);
-              if (r.unique_visits !== undefined && r.unique_visits !== null) d.uniqueVisits = Number(r.unique_visits);
+
+              if (r.name != null) d.name = r.name;
+              if (r.email != null) d.email = r.email;
+              if (r.phone != null) d.phone = r.phone;
+              if (r.password_hash != null) d.passwordHash = r.password_hash;
+              if (r.role != null) d.role = r.role;
+              if (r.status != null) d.status = r.status;
+              if (r.short_code != null) { d.shortCode = r.short_code; d.short_code = r.short_code; }
+              if (r.owner_id != null) { d.ownerId = r.owner_id; d.owner_id = r.owner_id; }
+              if (r.destination_url != null) { d.destinationUrl = r.destination_url; d.destination_url = r.destination_url; }
+              if (r.domain != null) d.domain = r.domain;
+              if (r.title != null) d.title = r.title;
+              if (r.description != null) d.description = r.description;
+              if (r.case_reference != null) { d.caseReference = r.case_reference; d.case_reference = r.case_reference; }
+              if (r.clicks != null) d.clicks = Number(r.clicks);
+              if (r.unique_visits != null) d.uniqueVisits = Number(r.unique_visits);
               if (r.expiration_date !== undefined) d.expirationDate = r.expiration_date;
-              if (r.requires_consent_notice !== undefined && r.requires_consent_notice !== null) {
-                d.requiresConsentNotice = r.requires_consent_notice;
+              if (r.requires_consent_notice != null) d.requiresConsentNotice = r.requires_consent_notice;
+              if (r.link_id != null) { d.linkId = r.link_id; d.link_id = r.link_id; }
+              if (r.user_id != null) { d.userId = r.user_id; d.user_id = r.user_id; }
+              if (r.visitor_reference_id != null) d.visitorReferenceId = r.visitor_reference_id;
+              if (r.visitor_session_id != null) d.visitorSessionId = r.visitor_session_id;
+              if (r.is_read != null) d.isRead = r.is_read;
+              if (r.metadata != null) {
+                try { d.metadata = typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata; } catch(e) {}
               }
-              if (r.link_id !== undefined && r.link_id !== null) d.linkId = r.link_id;
-              if (r.visitor_reference_id !== undefined && r.visitor_reference_id !== null) d.visitorReferenceId = r.visitor_reference_id;
-              if (r.visitor_session_id !== undefined && r.visitor_session_id !== null) d.visitorSessionId = r.visitor_session_id;
+              if (r.performed_by != null) d.performedBy = r.performed_by;
+              if (r.performed_by_name != null) d.performedByName = r.performed_by_name;
+              if (r.action != null) d.action = r.action;
+              if (r.target_type != null) d.targetType = r.target_type;
+              if (r.target_id != null) d.targetId = r.target_id;
+              if (r.ip_address != null) d.ipAddress = r.ip_address;
               d.createdAt = r.created_at || d.createdAt;
               d.updatedAt = r.updated_at || d.updatedAt;
               return d;
