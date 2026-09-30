@@ -6,9 +6,13 @@ const Link = require('../models/Link');
 // @access  Private (Owner, Admin, Super Admin)
 exports.getVisitorActivities = async (req, res, next) => {
   try {
-    const { search, status, locationStatus, cameraStatus, date, page = 1, limit = 20 } = req.query;
+    const { search, status, locationStatus, cameraStatus, date, page = 1, limit = 20, linkId } = req.query;
 
     let matchQuery = {};
+
+    if (linkId && linkId !== 'ALL') {
+      matchQuery.linkId = linkId;
+    }
 
     // Ownership check: regular officers only see visits for links they created
     if (req.user.role === 'USER') {

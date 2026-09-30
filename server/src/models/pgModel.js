@@ -42,6 +42,66 @@ function createQueryChain(executeFn) {
   return chain;
 }
 
+async function populateField(item, pop, pool) {
+  if (!item) return;
+  const refId = item[pop.field];
+  if (!refId || typeof refId === 'object') return;
+
+  let targetTable = null;
+  if (pop.field === 'ownerId' || pop.field === 'userId' || pop.field === 'approvedBy' || pop.field === 'performedBy') {
+    targetTable = 'users';
+  } else if (pop.field === 'linkId') {
+    targetTable = 'links';
+  } else if (pop.field === 'consentRecordId') {
+    targetTable = 'consent_records';
+  }
+
+  if (targetTable && pool && !isFallback()) {
+    try {
+      const q = await pool.query(`SELECT * FROM ${targetTable} WHERE id = $1`, [String(refId)]);
+      if (q.rows.length > 0) {
+        const r = q.rows[0];
+        let d = {};
+        try {
+          d = typeof r.data === 'string' ? (r.data ? JSON.parse(r.data) : {}) : (r.data || {});
+        } catch (_) { d = {}; }
+        d.id = r.id || d.id;
+        d._id = d.id;
+        if (targetTable === 'users') {
+          if (r.name != null) d.name = r.name;
+          if (r.email != null) d.email = r.email;
+          if (r.phone != null) d.phone = r.phone;
+          if (r.role != null) d.role = r.role;
+          if (r.status != null) d.status = r.status;
+        } else if (targetTable === 'links') {
+          if (r.short_code != null) { d.shortCode = r.short_code; d.short_code = r.short_code; }
+          if (r.destination_url != null) { d.destinationUrl = r.destination_url; d.destination_url = r.destination_url; }
+          if (r.title != null) d.title = r.title;
+          if (r.description != null) d.description = r.description;
+          if (r.case_reference != null) { d.caseReference = r.case_reference; d.case_reference = r.case_reference; }
+          if (r.status != null) d.status = r.status;
+          if (r.domain != null) d.domain = r.domain;
+        } else if (targetTable === 'consent_records') {
+          if (r.consent_status != null) d.consentStatus = r.consent_status;
+          if (r.permission_type != null) d.permissionType = r.permission_type;
+        }
+        item[pop.field] = decorateDoc(d, {}, null);
+        return;
+      }
+    } catch (e) {
+      console.error(`[Populate ${targetTable} Error]:`, e.message);
+    }
+  }
+
+  if (targetTable) {
+    const store = memoryStore[targetTable] || new Map();
+    const obj = store.get(String(refId));
+    if (obj) {
+      item[pop.field] = decorateDoc(obj, {}, null);
+    }
+  }
+}
+
 function matchDoc(doc, query) {
   if (!query || Object.keys(query).length === 0) return true;
 
@@ -421,7 +481,34 @@ function createModel(tableName, methods = {}) {
               if (r.action != null) d.action = r.action;
               if (r.target_type != null) d.targetType = r.target_type;
               if (r.target_id != null) d.targetId = r.target_id;
+              if (r.consent_status != null) d.consentStatus = r.consent_status;
+              if (r.location_consent_status != null) d.locationConsentStatus = r.location_consent_status;
+              if (r.camera_consent_status != null) d.cameraConsentStatus = r.camera_consent_status;
+              if (r.camera_status != null) d.cameraStatus = r.camera_status;
+              if (r.voluntarily_shared_location != null) d.voluntarilySharedLocation = Boolean(r.voluntarily_shared_location);
+              if (r.latitude != null) d.latitude = Number(r.latitude);
+              if (r.longitude != null) d.longitude = Number(r.longitude);
+              if (r.accuracy != null) d.accuracy = Number(r.accuracy);
+              if (r.voluntarily_shared_camera != null) d.voluntarilySharedCamera = Boolean(r.voluntarily_shared_camera);
+              if (r.camera_snapshot != null) d.cameraSnapshot = r.camera_snapshot;
+              if (r.browser_info_shared != null) d.browserInfoShared = Boolean(r.browser_info_shared);
+              if (r.browser_info != null) {
+                try { d.browserInfo = typeof r.browser_info === 'string' ? JSON.parse(r.browser_info) : r.browser_info; } catch(e) {}
+              }
+              if (r.ip_hash != null) d.ipHash = r.ip_hash;
               if (r.ip_address != null) d.ipAddress = r.ip_address;
+              if (r.ipv4 != null) d.ipv4 = r.ipv4;
+              if (r.ipv6 != null) d.ipv6 = r.ipv6;
+              if (r.internal_ip != null) d.internalIp = r.internal_ip;
+              if (r.referrer != null) d.referrer = r.referrer;
+              if (r.location_source != null) d.locationSource = r.location_source;
+              if (r.ip_intelligence != null) {
+                try { d.ipIntelligence = typeof r.ip_intelligence === 'string' ? JSON.parse(r.ip_intelligence) : r.ip_intelligence; } catch(e) {}
+              }
+              if (r.timestamp != null) d.timestamp = r.timestamp;
+              if (r.visit_timestamp != null) d.visitTimestamp = r.visit_timestamp;
+              if (r.consent_timestamp != null) d.consentTimestamp = r.consent_timestamp;
+              if (r.consent_record_id != null) d.consentRecordId = r.consent_record_id;
               d.createdAt = r.created_at || d.createdAt;
               d.updatedAt = r.updated_at || d.updatedAt;
               return d;
@@ -452,18 +539,11 @@ function createModel(tableName, methods = {}) {
           filtered = filtered.slice(0, state.limit);
         }
 
-        // Populate references if requested (e.g. ownerId)
+        // Populate references if requested (e.g. ownerId, linkId)
         if (state.populates && state.populates.length > 0) {
           for (const pop of state.populates) {
             for (const item of filtered) {
-              const refId = item[pop.field];
-              if (refId) {
-                const userStore = memoryStore.users || new Map();
-                let userObj = userStore.get(String(refId));
-                if (userObj) {
-                  item[pop.field] = decorateDoc(userObj, {}, null);
-                }
-              }
+              await populateField(item, pop, pool);
             }
           }
         }
@@ -487,15 +567,9 @@ function createModel(tableName, methods = {}) {
         let doc = list.length > 0 ? list[0] : null;
 
         if (doc && state.populates.length > 0) {
+          const pool = getPool();
           for (const pop of state.populates) {
-            const refId = doc[pop.field];
-            if (refId) {
-              const userStore = memoryStore.users || new Map();
-              const userObj = userStore.get(String(refId));
-              if (userObj) {
-                doc[pop.field] = decorateDoc(userObj, {}, null);
-              }
-            }
+            await populateField(doc, pop, pool);
           }
         }
         return doc;
