@@ -16,7 +16,11 @@ export default function ApprovalPending() {
     setCheckMessage('');
     try {
       await refreshUser();
-      const stored = JSON.parse(localStorage.getItem('trackops_user') || '{}');
+      let stored = {};
+      try {
+        const raw = localStorage.getItem('trackops_user');
+        if (raw && raw !== 'undefined') stored = JSON.parse(raw);
+      } catch (_) {}
       if (stored.status === 'APPROVED') {
         navigate('/dashboard');
       } else {
