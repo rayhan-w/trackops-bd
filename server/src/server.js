@@ -34,7 +34,7 @@ app.use(async (req, res, next) => {
     console.error('[DB Middleware Error]:', err.message);
     return res.status(503).json({
       success: false,
-      message: 'Database connection failed. Please ensure MONGODB_URI is properly configured.',
+      message: 'Database connection failed. Please ensure POSTGRES_URL or DATABASE_URL is properly configured.',
     });
   }
 });

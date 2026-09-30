@@ -9,7 +9,12 @@
     "seed": "node src/seeders/seed.js",
     "test": "node tests/workflow.test.js"
   },
-  "keywords": ["trackops", "investigation", "links", "consent"],
+  "keywords": [
+    "trackops",
+    "investigation",
+    "links",
+    "consent"
+  ],
   "author": "TrackOps BD Team",
   "license": "ISC",
   "dependencies": {
@@ -20,8 +25,8 @@
     "express-rate-limit": "^7.3.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.5.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

@@ -95,7 +95,7 @@ export default function Home() {
             </div>
             <div className="p-3">
               <span className="text-slate-400 block text-[11px]">Database Core</span>
-              <span className="font-bold text-blue-400 text-sm">MongoDB Connected</span>
+              <span className="font-bold text-blue-400 text-sm">PostgreSQL Connected</span>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { connectDB } = require('../config/db');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -15,9 +15,8 @@ const TelecomIntegration = require('../models/TelecomIntegration');
 
 const seedData = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/trackops_bd';
-    console.log(`[Seeder] Connecting to MongoDB at ${mongoUri}...`);
-    await mongoose.connect(mongoUri);
+    console.log('[Seeder] Connecting to database...');
+    await connectDB();
 
     console.log('[Seeder] Clearing old records...');
     await User.deleteMany({});
