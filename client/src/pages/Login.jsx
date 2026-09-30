@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Shield, Key, Mail, Lock, AlertCircle, ArrowRight, CheckCircle2, UserCheck } from 'lucide-react';
+import { Shield, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import DemoCredentialsModal from '../components/DemoCredentialsModal';
 
 export default function Login() {
   const { login } = useAuth();
@@ -15,7 +14,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,15 +52,9 @@ export default function Login() {
     }
   };
 
-  const handleFillCredentials = (email, pwd) => {
-    setIdentifier(email);
-    setPassword(pwd);
-    setError('');
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-      <Navbar onOpenDemoModal={() => setDemoModalOpen(true)} />
+    <div className="min-h-screen flex flex-col bg-[#FBFBFA] text-[#0F172A]">
+      <Navbar />
 
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-stone-200/80 shadow-xl">
@@ -79,46 +71,6 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Quick Demo Credentials Pill */}
-          <div className="mb-6 p-3 bg-orange-50/80 border border-orange-200/80 rounded-2xl">
-            <div className="flex items-center justify-between text-xs text-orange-950 font-semibold mb-2">
-              <span className="flex items-center space-x-1.5">
-                <Key className="w-3.5 h-3.5 text-orange-500" />
-                <span>Quick-Select Demo Account:</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setDemoModalOpen(true)}
-                className="text-[11px] text-orange-600 font-bold hover:underline"
-              >
-                View Details
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-              <button
-                type="button"
-                onClick={() => handleFillCredentials('superadmin@trackops.local', 'DemoSuperAdmin@2026')}
-                className="py-1 px-2 rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 font-bold text-center truncate shadow-2xs"
-              >
-                Super Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFillCredentials('admin@trackops.local', 'DemoAdmin@2026')}
-                className="py-1 px-2 rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 font-bold text-center truncate shadow-2xs"
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFillCredentials('officer@trackops.local', 'DemoOfficer@2026')}
-                className="py-1 px-2 rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 font-bold text-center truncate shadow-2xs"
-              >
-                Officer
-              </button>
-            </div>
-          </div>
-
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
@@ -129,11 +81,11 @@ export default function Login() {
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-stone-700 mb-1">
                 Email or Mobile Number
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -142,17 +94,17 @@ export default function Login() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="e.g. officer@trackops.local or +88017..."
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-mono"
+                  className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-stone-700 mb-1">
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -161,7 +113,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-mono"
+                  className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-mono"
                 />
               </div>
             </div>
@@ -182,23 +134,19 @@ export default function Login() {
                 )}
               </button>
             </div>
-
-            <div className="text-center pt-3 text-xs text-stone-500">
-              Need an officer account?{' '}
-              <Link to="/register" className="text-orange-600 font-bold hover:underline">
-                Register here
-              </Link>
-            </div>
           </form>
+
+          {/* Registration link */}
+          <div className="mt-6 pt-5 border-t border-stone-200/80 text-center text-xs text-stone-500">
+            <span>New officer needing portal credentials? </span>
+            <Link to="/register" className="text-orange-600 font-bold hover:underline">
+              Submit Registration Request
+            </Link>
+          </div>
         </div>
       </main>
 
       <Footer />
-      <DemoCredentialsModal
-        isOpen={demoModalOpen}
-        onClose={() => setDemoModalOpen(false)}
-        onSelectAccount={handleFillCredentials}
-      />
     </div>
   );
 }

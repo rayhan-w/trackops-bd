@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Key, Menu, X, ChevronRight, Activity, Sparkles } from 'lucide-react';
+import { Shield, Menu, X, ChevronRight, Activity, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export default function Navbar({ onOpenDemoModal }) {
+export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,13 +46,6 @@ export default function Navbar({ onOpenDemoModal }) {
             <a href="#compliance" className="hover:text-orange-600 transition-colors">
               Consent & Privacy
             </a>
-            <button
-              onClick={onOpenDemoModal}
-              className="text-xs bg-orange-50/80 hover:bg-orange-100 text-orange-700 border border-orange-200/80 px-3.5 py-1.5 rounded-full flex items-center space-x-1.5 transition-all shadow-2xs font-semibold"
-            >
-              <Key className="w-3.5 h-3.5 text-orange-500" />
-              <span>Demo Credentials</span>
-            </button>
           </nav>
 
           {/* Desktop Right CTA */}
@@ -98,13 +91,6 @@ export default function Navbar({ onOpenDemoModal }) {
           {/* Mobile menu button */}
           <div className="flex md:hidden items-center space-x-2">
             <button
-              onClick={onOpenDemoModal}
-              className="text-xs bg-orange-50 text-orange-600 p-2 rounded-xl border border-orange-200"
-              title="Demo Accounts"
-            >
-              <Key className="w-4 h-4" />
-            </button>
-            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-stone-600 hover:text-stone-900 rounded-xl hover:bg-stone-100"
             >
@@ -145,16 +131,6 @@ export default function Navbar({ onOpenDemoModal }) {
           >
             Consent & Privacy
           </a>
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              onOpenDemoModal();
-            }}
-            className="w-full text-left text-orange-700 font-semibold py-2 flex items-center space-x-2 bg-orange-50 px-3 rounded-xl border border-orange-200"
-          >
-            <Key className="w-4 h-4 text-orange-600" />
-            <span>View Demo Credentials</span>
-          </button>
           <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
             {isAuthenticated ? (
               <Link

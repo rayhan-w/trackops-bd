@@ -25,14 +25,11 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import DemoCredentialsModal from '../components/DemoCredentialsModal';
 
 export default function Home() {
-  const [demoModalOpen, setDemoModalOpen] = useState(false);
-
   return (
     <div className="min-h-screen flex flex-col bg-[#FBFBFA] text-[#0F172A] selection:bg-orange-100 selection:text-orange-900 font-sans">
-      <Navbar onOpenDemoModal={() => setDemoModalOpen(true)} />
+      <Navbar />
 
       {/* HERO SECTION (Matches CogniAI reference) */}
       <section className="relative overflow-hidden pt-12 pb-20 sm:pt-16 sm:pb-28">
@@ -76,13 +73,13 @@ export default function Home() {
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
-                <button
-                  onClick={() => setDemoModalOpen(true)}
+                <a
+                  href="#features"
                   className="px-6 py-3.5 rounded-full bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm border border-stone-200 shadow-2xs flex items-center justify-center space-x-2 transition-all hover:border-orange-300"
                 >
-                  <Key className="w-4 h-4 text-orange-500" />
-                  <span>Demo Credentials</span>
-                </button>
+                  <span>Explore Platform</span>
+                  <ChevronRight className="w-4 h-4 text-stone-400" />
+                </a>
               </div>
 
               {/* Partner Logos / Trust row */}
@@ -111,120 +108,96 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column: Hero Preview Mockup Cards with Warm Peach Gradient Backdrop */}
+            {/* Right Column: TrackOps BD Real-Time Telemetry & Verification Preview */}
             <div className="lg:col-span-5 relative">
               {/* Warm Peach/Orange Card Backdrop Container */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-orange-100/80 via-amber-50/70 to-orange-200/60 border border-orange-200/50 shadow-2xl shadow-orange-500/10 space-y-5 relative">
+              <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-orange-100/80 via-amber-50/70 to-orange-200/60 border border-orange-200/50 shadow-2xl shadow-orange-500/10 space-y-4 relative">
                 
-                {/* FLOATING CARD 1: Integration Tools */}
+                {/* CARD 1: Live Link Telemetry Stream */}
                 <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-md space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-xs text-stone-800 tracking-tight">Integration Tools</h4>
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                      <span className="font-bold text-xs text-stone-800 tracking-tight">Active Link Telemetry</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                      LIVE STREAM
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    {/* Gmail */}
-                    <div className="p-2.5 bg-stone-50/80 rounded-xl border border-stone-100 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold text-[10px]">
-                          M
-                        </div>
-                        <div>
-                          <div className="font-semibold text-stone-800 text-[11px]">Gmail</div>
-                          <div className="text-[9px] text-stone-400">Emails Sent: 1,230</div>
-                        </div>
-                      </div>
-                      <span className="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full">
-                        ON
-                      </span>
+                  {/* Active Link Box */}
+                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/70 space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-stone-400 font-medium">Tracking Route</span>
+                      <span className="text-[10px] font-mono text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">200 OK</span>
                     </div>
-
-                    {/* Facebook */}
-                    <div className="p-2.5 bg-stone-50/80 rounded-xl border border-stone-100 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">
-                          f
-                        </div>
-                        <div>
-                          <div className="font-semibold text-stone-800 text-[11px]">Facebook</div>
-                          <div className="text-[9px] text-stone-400">Ad CTR: 4.2%</div>
-                        </div>
-                      </div>
-                      <span className="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full">
-                        ON
-                      </span>
+                    <div className="flex items-center space-x-2 font-mono text-xs font-semibold text-stone-800">
+                      <LinkIcon className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                      <span className="truncate">/l/case-dhaka-2026</span>
                     </div>
-
-                    {/* Instagram */}
-                    <div className="p-2.5 bg-stone-50/80 rounded-xl border border-stone-100 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-[10px]">
-                          📷
-                        </div>
-                        <div>
-                          <div className="font-semibold text-stone-800 text-[11px]">Instagram</div>
-                          <div className="text-[9px] text-stone-400">Profile Visits: 13,520</div>
-                        </div>
-                      </div>
-                      <span className="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full">
-                        ON
-                      </span>
+                    <div className="text-[10px] text-stone-400 truncate flex items-center space-x-1">
+                      <span>Dest:</span>
+                      <span className="text-stone-600 truncate">https://bdnews24.com/special-report</span>
                     </div>
+                  </div>
 
-                    {/* X (Twitter) */}
-                    <div className="p-2.5 bg-stone-50/80 rounded-xl border border-stone-100 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 rounded-lg bg-stone-900 text-white flex items-center justify-center font-bold text-[10px]">
-                          𝕏
+                  {/* Metric Chips */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 bg-orange-50/60 rounded-xl border border-orange-100">
+                      <div className="text-base font-extrabold text-orange-600">1,428</div>
+                      <div className="text-[9px] font-medium text-stone-500">Total Visits</div>
+                    </div>
+                    <div className="p-2 bg-stone-50 rounded-xl border border-stone-100">
+                      <div className="text-base font-extrabold text-stone-800">94.2%</div>
+                      <div className="text-[9px] font-medium text-stone-500">GPS Precision</div>
+                    </div>
+                    <div className="p-2 bg-stone-50 rounded-xl border border-stone-100">
+                      <div className="text-base font-extrabold text-emerald-600">100%</div>
+                      <div className="text-[9px] font-medium text-stone-500">Lawful Log</div>
+                    </div>
+                  </div>
+
+                  {/* Recent Activity Log Snippet */}
+                  <div className="space-y-2 pt-1 border-t border-stone-100 text-xs">
+                    <div className="flex items-center justify-between text-[10px] text-stone-400 font-medium">
+                      <span>Verified Target Events</span>
+                      <span>Just now</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50/70 border border-stone-100 text-[11px]">
+                        <div className="flex items-center space-x-2 truncate">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          <span className="font-semibold text-stone-800 truncate">Gulshan-2, Dhaka</span>
+                          <span className="text-[9px] text-stone-400 font-mono">(Grameenphone 4G)</span>
                         </div>
-                        <div>
-                          <div className="font-semibold text-stone-800 text-[11px]">X (Twitter)</div>
-                          <div className="text-[9px] text-stone-400">Tweets Posted: 154</div>
-                        </div>
+                        <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">±12m</span>
                       </div>
-                      <span className="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full">
-                        ON
-                      </span>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50/70 border border-stone-100 text-[11px]">
+                        <div className="flex items-center space-x-2 truncate">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                          <span className="font-semibold text-stone-800 truncate">Agrabad, Chittagong</span>
+                          <span className="text-[9px] text-stone-400 font-mono">(WiFi / ISP)</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded">±28m</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* FLOATING CARD 2: Profile Completion */}
-                <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-md space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-stone-700">Profile Completion</span>
-                    <span className="text-[10px] text-stone-400 font-medium">You're Almost There</span>
+                {/* CARD 2: Consent & Lawful Standards */}
+                <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-md flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-stone-800">W3C Voluntary Consent Engine</div>
+                      <div className="text-[10px] text-stone-500">Cryptographically signed audit logs</div>
+                    </div>
                   </div>
-
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#0F172A] tracking-tight">87%</span>
-                  </div>
-
-                  {/* Multi-segmented Progress Bar */}
-                  <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden flex">
-                    <div className="w-[45%] bg-gradient-to-r from-orange-500 to-amber-500 h-full"></div>
-                    <div className="w-[25%] bg-emerald-500 h-full"></div>
-                    <div className="w-[17%] bg-blue-500 h-full"></div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 font-medium pt-1">
-                    <span>Basic Information</span>
-                    <span>Content & Activity</span>
-                    <span>Account Security</span>
-                  </div>
-
-                  {/* Micro action tags */}
-                  <div className="pt-2 flex items-center space-x-2">
-                    <button className="flex-1 py-1.5 bg-stone-50 hover:bg-stone-100 text-stone-700 text-[11px] font-semibold rounded-lg border border-stone-200/80 flex items-center justify-center space-x-1 transition-colors">
-                      <Check className="w-3 h-3 text-emerald-600" />
-                      <span>Verify by Email</span>
-                    </button>
-                    <button className="flex-1 py-1.5 bg-stone-50 hover:bg-stone-100 text-stone-700 text-[11px] font-semibold rounded-lg border border-stone-200/80 flex items-center justify-center space-x-1 transition-colors">
-                      <Lock className="w-3 h-3 text-orange-500" />
-                      <span>Enable 2FA</span>
-                    </button>
-                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-1 rounded-full border border-emerald-200/60">
+                    Compliant
+                  </span>
                 </div>
 
               </div>
@@ -515,10 +488,6 @@ export default function Home() {
       </section>
 
       <Footer />
-      <DemoCredentialsModal
-        isOpen={demoModalOpen}
-        onClose={() => setDemoModalOpen(false)}
-      />
     </div>
   );
 }
