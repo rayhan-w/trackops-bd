@@ -775,6 +775,7 @@ export default function UserManagement() {
                     onChange={(e) => setDeviceLimitInput(Number(e.target.value))}
                     className="p-2 bg-white border border-indigo-200 rounded-xl font-bold text-xs"
                   >
+                    <option value={0}>Unlimited Devices</option>
                     <option value={1}>1 Device</option>
                     <option value={2}>2 Devices</option>
                     <option value={3}>3 Devices</option>

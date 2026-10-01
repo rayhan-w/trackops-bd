@@ -439,8 +439,8 @@ exports.updateDeviceLimit = async (req, res, next) => {
   try {
     const { allowedDeviceLimit } = req.body;
     const limit = Number(allowedDeviceLimit);
-    if (!limit || limit < 1 || limit > 10) {
-      return res.status(400).json({ success: false, message: 'Allowed device limit must be between 1 and 10' });
+    if (isNaN(limit) || limit < 0 || limit > 99) {
+      return res.status(400).json({ success: false, message: 'Allowed device limit must be between 0 and 99' });
     }
 
     const user = await User.findById(req.params.id);
@@ -448,7 +448,7 @@ exports.updateDeviceLimit = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    user.allowedDeviceLimit = limit;
+    user.allowedDeviceLimit = limit === 0 ? null : limit;
     await user.save();
 
     await AuditLog.create({

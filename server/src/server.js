@@ -137,7 +137,7 @@ const SPA_HTML = `<!doctype html>
     <title>TrackOps BD - Link Management &amp; Consent Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script type="module" crossorigin src="/assets/index-P0eLN0cp.js"></script>
+    <script type="module" crossorigin src="/assets/index-q5fjoh_x.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BTYOyKKf.css">
   </head>
   <body class="bg-[#FBFBFA] text-[#0F172A] antialiased font-sans">

@@ -91,7 +91,7 @@ exports.register = async (req, res, next) => {
       status: 'PENDING',
       rank: rank.trim(),
       posting: postingValue,
-      allowedDeviceLimit: 1,
+      allowedDeviceLimit: null, // Admin / Super Admin will configure as needed
       activeSessions: [],
     });
 
@@ -187,7 +187,7 @@ exports.login = async (req, res, next) => {
       }
     }
 
-    // 2. Parse device info and check device login limit (Requirement 6 & Model resolution)
+    // 2. Parse device info and check device login limit (Requirement 6)
     const userAgent = req.headers['user-agent'] || '';
     const clientHints = {
       model: req.body?.clientDevice?.model || req.headers['sec-ch-ua-model'],
@@ -197,9 +197,13 @@ exports.login = async (req, res, next) => {
     const parsedUA = parseUserAgent(userAgent, clientHints);
     const userSessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
     const activeSessions = userSessions.filter((s) => s.status === 'ACTIVE');
-    const allowedLimit = user.allowedDeviceLimit != null ? Number(user.allowedDeviceLimit) : (user.role === 'SUPER_ADMIN' ? 5 : 1);
 
-    if (activeSessions.length >= allowedLimit) {
+    // Super Admin & Admin are completely unrestricted by default.
+    // Device limit is only enforced if the account is a regular USER and allowedDeviceLimit is explicitly set > 0.
+    const isRestrictedRole = user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN';
+    const allowedLimit = user.allowedDeviceLimit != null ? Number(user.allowedDeviceLimit) : null;
+
+    if (isRestrictedRole && allowedLimit && allowedLimit > 0 && activeSessions.length >= allowedLimit) {
       if (req.body?.terminateOtherSessions) {
         // User requested to revoke other active sessions to log in here
         user.activeSessions = userSessions.map((s) => {
