@@ -35,6 +35,9 @@ export default function ProtectedRoute({ children, allowedRoles = null, allowPen
     if (user.status === 'REJECTED') {
       return <Navigate to="/account-rejected" replace />;
     }
+    if (user.status === 'EXPIRED') {
+      return <Navigate to="/account-expired" replace />;
+    }
   }
 
   // Check role authorization

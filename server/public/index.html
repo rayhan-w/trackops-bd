@@ -8,10 +8,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-BTbuEMrh.js"></script>
+    <script type="module" crossorigin src="/assets/index-DExVSO7P.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-F8SnLJ4J.css">
   </head>
   <body class="bg-[#FBFBFA] text-[#0F172A] antialiased font-sans">
-    <div id="root"></div>
+    <div id="root">
+      <div id="pre-react-loader" style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #FBFBFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 24px; text-align: center;">
+        <div style="width: 56px; height: 56px; border-radius: 20px; background: linear-gradient(135deg, #FF7A50 0%, #FF5216 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(255, 82, 22, 0.4); margin-bottom: 20px;">
+          <svg style="width: 28px; height: 28px; fill: white;" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.67-3.13 9.04-7 10.18-3.87-1.14-7-5.51-7-10.18V6.3l7-3.12z"/></svg>
+        </div>
+        <h1 style="font-size: 22px; font-weight: 800; color: #0F172A; margin: 0 0 6px 0; letter-spacing: -0.025em;">
+          TrackOps<span style="color: #FF5216;">BD</span>
+        </h1>
+        <p style="font-size: 13px; color: #64748B; margin: 0 0 20px 0; font-weight: 500;">
+          Lawful Link Management &amp; Intelligence Hub
+        </p>
+        <div style="width: 140px; height: 4px; background: #E2E8F0; border-radius: 9999px; overflow: hidden; position: relative;">
+          <div style="width: 50%; height: 100%; background: linear-gradient(90deg, #FF7A50, #FF5216); border-radius: 9999px; animation: trackops-load 1.2s infinite ease-in-out;"></div>
+        </div>
+        <div id="loader-timeout-btn" style="display: none; margin-top: 24px;">
+          <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();" style="padding: 10px 20px; font-size: 12px; font-weight: 600; color: white; background: #0F172A; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
+            Refresh Interface
+          </button>
+        </div>
+        <style>
+          @keyframes trackops-load {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+          }
+        </style>
+        <script>
+          setTimeout(function() {
+            var btn = document.getElementById('loader-timeout-btn');
+            if (btn) btn.style.display = 'block';
+          }, 4000);
+        </script>
+      </div>
+    </div>
   </body>
 </html>
