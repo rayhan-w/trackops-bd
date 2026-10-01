@@ -290,13 +290,13 @@ export default function UserManagement() {
 
   return (
     <div className="min-h-screen flex bg-[#FBFBFA] text-[#0F172A]">
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
         <DashboardHeader
           title="Personnel Governance & Access"
           subtitle="Authorize accounts, assign rank & posting, configure validity timelines and device limits"
-          setSidebarOpen={setSidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
