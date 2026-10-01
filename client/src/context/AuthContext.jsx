@@ -44,14 +44,15 @@ export const AuthProvider = ({ children }) => {
     verifyAuth();
   }, [token]);
 
-  const login = async (identifier, password) => {
-    const res = await api.login(identifier, password);
+  const login = async (identifier, password, clientDevice = null) => {
+    const res = await api.login(identifier, password, clientDevice);
     if (res.success && res.token) {
       setToken(res.token);
       setUser(res.user);
       try {
         localStorage.setItem('trackops_token', res.token);
         localStorage.setItem('trackops_user', JSON.stringify(res.user));
+        if (res.sessionId) localStorage.setItem('trackops_session_id', res.sessionId);
       } catch (_) {}
       return res;
     }

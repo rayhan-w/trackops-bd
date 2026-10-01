@@ -187,9 +187,14 @@ exports.login = async (req, res, next) => {
       }
     }
 
-    // 2. Parse device info and check device login limit (Requirement 6)
+    // 2. Parse device info and check device login limit (Requirement 6 & Model resolution)
     const userAgent = req.headers['user-agent'] || '';
-    const parsedUA = parseUserAgent(userAgent);
+    const clientHints = {
+      model: req.body?.clientDevice?.model || req.headers['sec-ch-ua-model'],
+      platform: req.body?.clientDevice?.platform || req.headers['sec-ch-ua-platform'],
+      platformVersion: req.body?.clientDevice?.platformVersion,
+    };
+    const parsedUA = parseUserAgent(userAgent, clientHints);
     const userSessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
     const activeSessions = userSessions.filter((s) => s.status === 'ACTIVE');
     const allowedLimit = user.allowedDeviceLimit != null ? Number(user.allowedDeviceLimit) : (user.role === 'SUPER_ADMIN' ? 5 : 1);
@@ -207,15 +212,22 @@ exports.login = async (req, res, next) => {
 
     const sessionId = 'SES-' + crypto.randomBytes(8).toString('hex');
     const deviceName = parsedUA.model && parsedUA.model !== 'Model unavailable'
-      ? `${parsedUA.manufacturer} ${parsedUA.model}`
+      ? (parsedUA.manufacturer !== 'N/A' && !parsedUA.model.includes(parsedUA.manufacturer)
+          ? `${parsedUA.manufacturer} ${parsedUA.model}`
+          : parsedUA.model)
       : `${parsedUA.os} (${parsedUA.browser})`;
+
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
 
     const newSession = {
       sessionId,
       deviceName,
-      browser: parsedUA.browser + (parsedUA.browserVersion ? ` ${parsedUA.browserVersion}` : ''),
-      operatingSystem: parsedUA.os + (parsedUA.osVersion ? ` ${parsedUA.osVersion}` : ''),
-      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      manufacturer: parsedUA.manufacturer,
+      model: parsedUA.model,
+      deviceType: parsedUA.deviceType,
+      browser: parsedUA.browser + (parsedUA.browserVersion && parsedUA.browserVersion !== 'N/A' ? ` ${parsedUA.browserVersion}` : ''),
+      operatingSystem: parsedUA.os + (parsedUA.osVersion && parsedUA.osVersion !== 'N/A' ? ` ${parsedUA.osVersion}` : ''),
+      ipAddress: clientIp,
       firstLogin: new Date(),
       lastActive: new Date(),
       status: 'ACTIVE',
@@ -234,13 +246,15 @@ exports.login = async (req, res, next) => {
       action: 'USER_LOGIN',
       targetType: 'AUTH',
       targetId: user._id.toString(),
-      details: { sessionId, deviceName, ip: req.ip },
-      ipAddress: req.ip,
+      details: { sessionId, deviceName, manufacturer: parsedUA.manufacturer, model: parsedUA.model, ip: clientIp },
+      ipAddress: clientIp,
     });
 
     res.json({
       success: true,
       token,
+      sessionId,
+      currentSession: newSession,
       user: {
         id: user._id,
         name: user.name,
@@ -270,9 +284,60 @@ exports.login = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).select('-passwordHash');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const sessionsWithCurrent = Array.isArray(user.activeSessions)
+      ? user.activeSessions.map((s) => ({
+          ...s,
+          isCurrent: s.sessionId === req.sessionId,
+        }))
+      : [];
+
+    const userObj = user.toObject ? user.toObject() : { ...user };
+    userObj.activeSessions = sessionsWithCurrent;
+    userObj.currentSessionId = req.sessionId;
+
     res.json({
       success: true,
-      user,
+      currentSessionId: req.sessionId,
+      user: userObj,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Revoke all other sessions for current user
+// @route   POST /api/auth/revoke-other-sessions
+// @access  Private
+exports.revokeOtherSessions = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const currentSessionId = req.sessionId;
+    const sessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
+
+    user.activeSessions = sessions.map((s) => {
+      if (s.sessionId !== currentSessionId && s.status === 'ACTIVE') {
+        return { ...s, status: 'REVOKED', revokedAt: new Date() };
+      }
+      return s;
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'All other device sessions have been revoked.',
+      activeSessions: user.activeSessions.map((s) => ({
+        ...s,
+        isCurrent: s.sessionId === currentSessionId,
+      })),
     });
   } catch (error) {
     next(error);

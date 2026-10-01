@@ -11,16 +11,25 @@ import {
   AlertCircle,
   LogOut,
   Save,
+  Smartphone,
+  Laptop,
+  Globe,
+  Clock,
+  ShieldCheck,
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import Footer from '../components/Footer';
+import ActiveDeviceCard from '../components/ActiveDeviceCard';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
 export default function Settings() {
-  const { user, setUser, logout } = useAuth();
+  const { user, setUser, refreshUser, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [revokingOthers, setRevokingOthers] = useState(false);
+  const [sessionSuccess, setSessionSuccess] = useState('');
+  const [sessionError, setSessionError] = useState('');
 
   // Profile Form
   const [name, setName] = useState(user?.name || '');
@@ -98,6 +107,33 @@ export default function Settings() {
       setUpdatingPassword(false);
     }
   };
+
+  const handleRevokeOthers = async () => {
+    if (!window.confirm('Are you sure you want to log out all other active devices?')) return;
+    setRevokingOthers(true);
+    setSessionSuccess('');
+    setSessionError('');
+    try {
+      const res = await api.revokeOtherSessions();
+      await refreshUser();
+      setSessionSuccess(res.message || 'All other active devices have been logged out.');
+      setTimeout(() => setSessionSuccess(''), 5000);
+    } catch (err) {
+      setSessionError(err.message || 'Failed to revoke other sessions.');
+    } finally {
+      setRevokingOthers(false);
+    }
+  };
+
+  const currentSession =
+    user?.activeSessions?.find((s) => s.isCurrent) ||
+    user?.activeSessions?.find((s) => s.status === 'ACTIVE') ||
+    user?.activeSessions?.[0] ||
+    null;
+
+  const otherSessions = Array.isArray(user?.activeSessions)
+    ? user.activeSessions.filter((s) => s !== currentSession && s.status === 'ACTIVE')
+    : [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
@@ -283,6 +319,77 @@ export default function Settings() {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Active Devices & Security Sessions Card */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-[#0B192C]">Active Devices &amp; Login Sessions</h3>
+                  <p className="text-xs text-slate-500">
+                    Review and manage authorized hardware models connected to your officer account.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-semibold text-slate-500">Device Limit:</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 text-xs font-mono font-bold border border-slate-200">
+                  {user?.allowedDeviceLimit || 1} allowed
+                </span>
+              </div>
+            </div>
+
+            {sessionSuccess && (
+              <div className="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-xl flex items-center space-x-2 border border-emerald-200 animate-fadeIn">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                <span>{sessionSuccess}</span>
+              </div>
+            )}
+
+            {sessionError && (
+              <div className="p-3 bg-red-50 text-red-800 text-xs rounded-xl flex items-center space-x-2 border border-red-200 animate-fadeIn">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{sessionError}</span>
+              </div>
+            )}
+
+            {/* Current Device Highlight Card */}
+            {currentSession && (
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Current Session
+                </span>
+                <ActiveDeviceCard
+                  session={currentSession}
+                  isCurrent={true}
+                  onRevokeOthers={otherSessions.length > 0 ? handleRevokeOthers : null}
+                  revoking={revokingOthers}
+                />
+              </div>
+            )}
+
+            {/* Other Active Devices list */}
+            {otherSessions.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Other Active Devices ({otherSessions.length})
+                </span>
+                <div className="grid grid-cols-1 gap-3">
+                  {otherSessions.map((sess) => (
+                    <ActiveDeviceCard
+                      key={sess.sessionId}
+                      session={sess}
+                      isCurrent={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </main>
         <Footer />

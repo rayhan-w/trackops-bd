@@ -23,6 +23,8 @@ import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import Footer from '../components/Footer';
 import ExploreToolsSection from '../components/ExploreToolsSection';
+import ActiveDeviceCard from '../components/ActiveDeviceCard';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
 export default function Dashboard() {
@@ -35,6 +37,32 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [copiedId, setCopiedId] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  const { user, refreshUser } = useAuth();
+  const [revokingOthers, setRevokingOthers] = useState(false);
+  const [revokeMessage, setRevokeMessage] = useState('');
+
+  const currentSession =
+    user?.activeSessions?.find((s) => s.isCurrent) ||
+    user?.activeSessions?.find((s) => s.status === 'ACTIVE') ||
+    user?.activeSessions?.[0] ||
+    null;
+
+  const handleRevokeOthers = async () => {
+    if (!window.confirm('Are you sure you want to log out all other active devices?')) return;
+    setRevokingOthers(true);
+    setRevokeMessage('');
+    try {
+      await api.revokeOtherSessions();
+      await refreshUser();
+      setRevokeMessage('All other active devices have been logged out.');
+      setTimeout(() => setRevokeMessage(''), 4000);
+    } catch (e) {
+      alert(e.message || 'Failed to revoke other sessions');
+    } finally {
+      setRevokingOthers(false);
+    }
+  };
 
   // Edit Modal State
   const [editingLink, setEditingLink] = useState(null);
@@ -199,6 +227,27 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Active Login Device Card (Beautiful Model & Identity) */}
+          {currentSession && (
+            <div className="space-y-2">
+              <ActiveDeviceCard
+                session={currentSession}
+                isCurrent={true}
+                onRevokeOthers={
+                  user?.activeSessions?.filter((s) => s.status === 'ACTIVE').length > 1
+                    ? handleRevokeOthers
+                    : null
+                }
+                revoking={revokingOthers}
+              />
+              {revokeMessage && (
+                <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl animate-fadeIn">
+                  {revokeMessage}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Section Header & Actions */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">

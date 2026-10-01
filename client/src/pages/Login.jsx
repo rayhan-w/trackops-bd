@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Shield, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { Shield, Mail, Lock, AlertCircle, ArrowRight, Smartphone, Laptop, Tablet, Cpu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { detectCurrentDevice } from '../utils/deviceHelper';
 
 export default function Login() {
   const { login } = useAuth();
@@ -14,6 +15,11 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [detectedDev, setDetectedDev] = useState(null);
+
+  useEffect(() => {
+    detectCurrentDevice().then((dev) => setDetectedDev(dev));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +31,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const res = await login(identifier.trim(), password);
+      const res = await login(identifier.trim(), password, detectedDev);
       if (res.success && res.user) {
         // Status checks
         if (res.user.status === 'PENDING') {
@@ -128,6 +134,28 @@ export default function Login() {
                 />
               </div>
             </div>
+
+            {/* Detected Device Preview */}
+            {detectedDev && (
+              <div className="bg-gradient-to-r from-stone-50 to-orange-50/40 border border-stone-200/90 rounded-2xl p-3 flex items-center space-x-3 text-left shadow-2xs">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  {detectedDev.isMobile ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-xs font-bold text-slate-900 truncate">
+                      {detectedDev.model}
+                    </span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200/60">
+                      Login Device
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-stone-500 truncate">
+                    {detectedDev.os} • {detectedDev.browser}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="pt-2">
               <button

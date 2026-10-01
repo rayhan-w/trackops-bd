@@ -830,11 +830,21 @@ export default function UserManagement() {
                           const isActive = sess.status === 'ACTIVE';
                           return (
                             <tr key={sess.sessionId || idx} className="hover:bg-stone-50/50">
-                              <td className="py-2.5 px-3 font-semibold text-slate-800">
-                                {sess.deviceName || 'Unknown Device'}
+                              <td className="py-2.5 px-3">
+                                <div className="font-bold text-slate-900 flex items-center space-x-1.5">
+                                  <span>{sess.model || sess.deviceName || 'Unknown Device'}</span>
+                                  {sess.manufacturer && sess.manufacturer !== 'N/A' && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200/60">
+                                      {sess.manufacturer}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-stone-400 font-mono mt-0.5">
+                                  IP: {sess.ipAddress || '—'}
+                                </div>
                               </td>
-                              <td className="py-2.5 px-3 text-stone-600">{sess.browser || '—'}</td>
-                              <td className="py-2.5 px-3 text-stone-600">{sess.operatingSystem || '—'}</td>
+                              <td className="py-2.5 px-3 text-stone-600 font-medium">{sess.browser || '—'}</td>
+                              <td className="py-2.5 px-3 text-stone-600 font-medium">{sess.operatingSystem || '—'}</td>
                               <td className="py-2.5 px-3 text-stone-500 font-mono text-[11px]">
                                 {sess.firstLogin
                                   ? new Date(sess.firstLogin).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
