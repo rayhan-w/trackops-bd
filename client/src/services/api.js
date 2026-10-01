@@ -35,11 +35,11 @@ const handleResponse = async (response) => {
 
 export const api = {
   // Auth
-  login: async (identifier, password, clientDevice = null) => {
+  login: async (identifier, password, clientDevice = null, terminateOtherSessions = false) => {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password, clientDevice }),
+      body: JSON.stringify({ identifier, password, clientDevice, terminateOtherSessions }),
     });
     return handleResponse(res);
   },

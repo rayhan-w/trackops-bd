@@ -16,14 +16,40 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [detectedDev, setDetectedDev] = useState(null);
+  const [deviceLimitInfo, setDeviceLimitInfo] = useState(null);
 
   useEffect(() => {
     detectCurrentDevice().then((dev) => setDetectedDev(dev));
   }, []);
 
+  const handleForceLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await login(identifier.trim(), password, detectedDev, true);
+      if (res.success && res.user) {
+        if (res.user.status === 'PENDING') return navigate('/approval-pending');
+        if (res.user.status === 'EXPIRED') return navigate('/account-expired');
+        if (res.user.status === 'SUSPENDED') return navigate('/account-suspended');
+        if (res.user.status === 'REJECTED') return navigate('/account-rejected');
+
+        if (res.user.role === 'SUPER_ADMIN') {
+          navigate('/admin/users');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to sign in. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setDeviceLimitInfo(null);
 
     if (!identifier.trim() || !password) {
       return setError('Please enter your email or phone number and password');
@@ -31,7 +57,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const res = await login(identifier.trim(), password, detectedDev);
+      const res = await login(identifier.trim(), password, detectedDev, false);
       if (res.success && res.user) {
         // Status checks
         if (res.user.status === 'PENDING') {
@@ -59,9 +85,11 @@ export default function Login() {
         return navigate('/account-expired');
       }
       if (err.data?.status === 'DEVICE_LIMIT_REACHED') {
-        return setError(
-          'You have reached your maximum allowed device limit. Please log out from an existing device or contact your administrator.'
-        );
+        setDeviceLimitInfo({
+          allowedLimit: err.data?.allowedLimit || 1,
+          activeSessions: err.data?.activeSessions || [],
+        });
+        return;
       }
       setError(err.message || 'Invalid login credentials. Please try again.');
     } finally {
@@ -94,6 +122,36 @@ export default function Login() {
               <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3.5 rounded-xl flex items-start space-x-2 animate-fadeIn">
                 <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {deviceLimitInfo && (
+              <div className="bg-amber-50 border border-amber-300 text-amber-950 text-xs p-4 rounded-2xl space-y-3 animate-fadeIn shadow-xs">
+                <div className="flex items-start space-x-2.5">
+                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-extrabold text-amber-950 text-sm">
+                      ডিভাইস লিমিট পূর্ণ হয়েছে ({deviceLimitInfo.allowedLimit}টি ডিভাইস)
+                    </h4>
+                    <p className="text-amber-800 mt-1 leading-relaxed text-xs">
+                      আপনার অ্যাকাউন্টে একসাথে সর্বোচ্চ <strong>{deviceLimitInfo.allowedLimit}টি ডিভাইসে</strong> লগইন থাকার অনুমতি রয়েছে। অন্য কোনো ব্রাউজারে বা ডিভাইসে আপনার অ্যাকাউন্ট বর্তমানে সক্রিয় আছে।
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={handleForceLogin}
+                    disabled={loading}
+                    className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 active:scale-[0.99] text-white font-bold rounded-xl transition-all shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <span>পূর্ববর্তী ডিভাইস লগআউট করে এখানে সাইন-ইন করুন</span>
+                  </button>
+                  <p className="text-[11px] text-amber-800/80 text-center mt-2 font-medium">
+                    অথবা অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করে ডিভাইস লিমিট বাড়িয়ে নিন।
+                  </p>
+                </div>
               </div>
             )}
 

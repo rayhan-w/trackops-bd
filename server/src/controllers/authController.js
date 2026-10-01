@@ -200,14 +200,24 @@ exports.login = async (req, res, next) => {
     const allowedLimit = user.allowedDeviceLimit != null ? Number(user.allowedDeviceLimit) : (user.role === 'SUPER_ADMIN' ? 5 : 1);
 
     if (activeSessions.length >= allowedLimit) {
-      return res.status(403).json({
-        success: false,
-        status: 'DEVICE_LIMIT_REACHED',
-        message: 'You have reached your maximum allowed device limit. Please log out from an existing device or contact your administrator.',
-        allowedLimit,
-        activeSessions,
-        userId: user._id,
-      });
+      if (req.body?.terminateOtherSessions) {
+        // User requested to revoke other active sessions to log in here
+        user.activeSessions = userSessions.map((s) => {
+          if (s.status === 'ACTIVE') {
+            return { ...s, status: 'REVOKED', revokedAt: new Date() };
+          }
+          return s;
+        });
+      } else {
+        return res.status(403).json({
+          success: false,
+          status: 'DEVICE_LIMIT_REACHED',
+          message: 'You have reached your maximum allowed device limit. Please log out from an existing device or contact your administrator.',
+          allowedLimit,
+          activeSessions,
+          userId: user._id,
+        });
+      }
     }
 
     const sessionId = 'SES-' + crypto.randomBytes(8).toString('hex');

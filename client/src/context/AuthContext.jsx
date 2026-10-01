@@ -44,8 +44,8 @@ export const AuthProvider = ({ children }) => {
     verifyAuth();
   }, [token]);
 
-  const login = async (identifier, password, clientDevice = null) => {
-    const res = await api.login(identifier, password, clientDevice);
+  const login = async (identifier, password, clientDevice = null, terminateOtherSessions = false) => {
+    const res = await api.login(identifier, password, clientDevice, terminateOtherSessions);
     if (res.success && res.token) {
       setToken(res.token);
       setUser(res.user);
