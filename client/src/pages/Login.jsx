@@ -31,6 +31,9 @@ export default function Login() {
         if (res.user.status === 'PENDING') {
           return navigate('/approval-pending');
         }
+        if (res.user.status === 'EXPIRED') {
+          return navigate('/account-expired');
+        }
         if (res.user.status === 'SUSPENDED') {
           return navigate('/account-suspended');
         }
@@ -46,6 +49,14 @@ export default function Login() {
         }
       }
     } catch (err) {
+      if (err.data?.status === 'EXPIRED') {
+        return navigate('/account-expired');
+      }
+      if (err.data?.status === 'DEVICE_LIMIT_REACHED') {
+        return setError(
+          'You have reached your maximum allowed device limit. Please log out from an existing device or contact your administrator.'
+        );
+      }
       setError(err.message || 'Invalid login credentials. Please try again.');
     } finally {
       setLoading(false);

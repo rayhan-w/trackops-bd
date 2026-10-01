@@ -48,6 +48,12 @@ const initSchema = async (client) => {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
     DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS rank VARCHAR(100); EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS posting VARCHAR(255); EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS activation_date TIMESTAMPTZ; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS expiry_date TIMESTAMPTZ; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS allowed_device_limit INTEGER DEFAULT 1; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS active_sessions JSONB DEFAULT '[]'::jsonb; EXCEPTION WHEN OTHERS THEN NULL; END $$;
     DO $$ BEGIN ALTER TABLE users ALTER COLUMN name DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
     DO $$ BEGIN ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
@@ -198,6 +204,11 @@ const seedDefaultAccounts = async (client) => {
       const adminId = crypto.randomBytes(12).toString('hex');
       const officerId = crypto.randomBytes(12).toString('hex');
 
+      const now = new Date();
+      const oneYear = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+      const halfYear = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
+      const ninetyDays = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
       const superAdminDoc = {
         id: superAdminId,
         _id: superAdminId,
@@ -207,7 +218,13 @@ const seedDefaultAccounts = async (client) => {
         passwordHash: superAdminHash,
         role: 'SUPER_ADMIN',
         status: 'APPROVED',
-        approvedAt: new Date(),
+        rank: 'Superintendent of Police (SP)',
+        posting: 'CID Cyber Police Centre, Dhaka',
+        allowedDeviceLimit: 5,
+        activationDate: now,
+        expiryDate: oneYear,
+        activeSessions: [],
+        approvedAt: now,
         notificationPreferences: { emailAlerts: true, linkClicks: true, systemUpdates: true },
       };
 
@@ -220,8 +237,14 @@ const seedDefaultAccounts = async (client) => {
         passwordHash: adminHash,
         role: 'ADMIN',
         status: 'APPROVED',
+        rank: 'Inspector',
+        posting: 'Detective Branch (DB), Dhaka Metro',
+        allowedDeviceLimit: 3,
+        activationDate: now,
+        expiryDate: halfYear,
+        activeSessions: [],
         approvedBy: superAdminId,
-        approvedAt: new Date(),
+        approvedAt: now,
         notificationPreferences: { emailAlerts: true, linkClicks: true, systemUpdates: true },
       };
 
@@ -234,8 +257,14 @@ const seedDefaultAccounts = async (client) => {
         passwordHash: officerHash,
         role: 'USER',
         status: 'APPROVED',
+        rank: 'Sub-Inspector (SI)',
+        posting: 'Cyber Police Unit, Rajshahi',
+        allowedDeviceLimit: 2,
+        activationDate: now,
+        expiryDate: ninetyDays,
+        activeSessions: [],
         approvedBy: adminId,
-        approvedAt: new Date(),
+        approvedAt: now,
         notificationPreferences: { emailAlerts: true, linkClicks: true, systemUpdates: true },
       };
 

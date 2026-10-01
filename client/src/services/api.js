@@ -12,9 +12,14 @@ const getAuthHeaders = () => {
 const handleResponse = async (response) => {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 403 && data.status === 'EXPIRED') {
+      if (!window.location.pathname.includes('/account-expired') && !window.location.pathname.includes('/login')) {
+        window.location.href = '/account-expired';
+      }
+    }
     if (response.status === 401) {
       // Don't auto-redirect on login failure itself
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register') && !window.location.pathname.includes('/account-expired')) {
         localStorage.removeItem('trackops_token');
         localStorage.removeItem('trackops_user');
         window.location.href = '/login?session_expired=true';
@@ -191,6 +196,47 @@ export const api = {
 
   deleteUser: async (id) => {
     const res = await fetch(`${API_BASE}/users/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  updateUserExpiry: async (id, data) => {
+    const res = await fetch(`${API_BASE}/users/${id}/expiry`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(res);
+  },
+
+  updateDeviceLimit: async (id, allowedDeviceLimit) => {
+    const res = await fetch(`${API_BASE}/users/${id}/device-limit`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ allowedDeviceLimit }),
+    });
+    return handleResponse(res);
+  },
+
+  getUserSessions: async (id) => {
+    const res = await fetch(`${API_BASE}/users/${id}/sessions`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  revokeUserSession: async (id, sessionId) => {
+    const res = await fetch(`${API_BASE}/users/${id}/sessions/${sessionId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  revokeAllUserSessions: async (id) => {
+    const res = await fetch(`${API_BASE}/users/${id}/sessions`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });

@@ -23,6 +23,8 @@ import Settings from './pages/Settings';
 import VisitorConsentPage from './pages/VisitorConsentPage';
 import VisitorActivity from './pages/VisitorActivity';
 import VisitorDetail from './pages/VisitorDetail';
+import AccountExpired from './pages/AccountExpired';
+import WhatsAppContactCard from './components/WhatsAppContactCard';
 
 // Short link helper redirect: /l/:shortCode -> /v/:shortCode
 function ShortLinkRedirect() {
@@ -45,6 +47,7 @@ export default function App() {
         <Route path="/approval-pending" element={<ApprovalPending />} />
         <Route path="/account-suspended" element={<AccountSuspended />} />
         <Route path="/account-rejected" element={<AccountRejected />} />
+        <Route path="/account-expired" element={<AccountExpired />} />
 
         {/* Officer & General Protected Routes (Requires APPROVED status) */}
         <Route
@@ -157,6 +160,9 @@ export default function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* Global WhatsApp Contact Card (Requirement 2) */}
+      <WhatsAppContactCard />
     </AuthProvider>
   );
 }

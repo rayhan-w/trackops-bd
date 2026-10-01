@@ -425,30 +425,55 @@ export default function VisitorDetail() {
                     </span>
                   </div>
 
-                  {/* Browser Telemetry */}
-                  {activity.browserInfo && (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 font-mono text-[11px]">
-                      <div className="font-sans font-semibold text-slate-700 pb-1 border-b border-slate-200 text-xs">
-                        Reported Device Profile
+                  {/* Device Information & Browser Telemetry (Requirement 8) */}
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                    <div className="font-sans font-bold text-slate-800 pb-1.5 border-b border-slate-200 flex items-center justify-between">
+                      <span>DEVICE INFORMATION</span>
+                      <span className="text-[10px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded font-semibold">
+                        Standards-Based
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Device Type:</span>
+                        <strong className="text-slate-800">
+                          {activity.browserInfo?.deviceType || (activity.browserInfo?.device === 'mobile' ? 'Mobile' : 'Desktop')}
+                        </strong>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Operating System:</span>
-                        <span className="text-slate-800">{activity.browserInfo.os || 'Standard'}</span>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Manufacturer:</span>
+                        <strong className="text-slate-800">
+                          {activity.browserInfo?.manufacturer && activity.browserInfo?.manufacturer !== 'Unknown' ? activity.browserInfo.manufacturer : 'N/A'}
+                        </strong>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Browser:</span>
-                        <span className="text-slate-800">{activity.browserInfo.browser || 'Web'}</span>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Model:</span>
+                        <strong className="text-slate-800">
+                          {activity.browserInfo?.model || 'Model unavailable'}
+                        </strong>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Resolution:</span>
-                        <span className="text-slate-800">{activity.browserInfo.screenResolution || '—'}</span>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Operating System:</span>
+                        <strong className="text-slate-800">
+                          {activity.browserInfo?.os || 'N/A'}
+                          {activity.browserInfo?.osVersion && activity.browserInfo?.osVersion !== 'N/A' ? ` ${activity.browserInfo.osVersion}` : ''}
+                        </strong>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Language:</span>
-                        <span className="text-slate-800">{activity.browserInfo.language || '—'}</span>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Browser:</span>
+                        <strong className="text-slate-800">
+                          {activity.browserInfo?.browser || 'N/A'}
+                          {activity.browserInfo?.browserVersion && activity.browserInfo?.browserVersion !== 'N/A' ? ` ${activity.browserInfo.browserVersion}` : ''}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Screen Category:</span>
+                        <strong className="text-slate-800">
+                          {activity.browserInfo?.screenCategory || (activity.browserInfo?.screenResolution ? (parseInt(activity.browserInfo.screenResolution) < 768 ? 'Mobile Screen' : 'Desktop Screen') : 'Standard')}
+                        </strong>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>

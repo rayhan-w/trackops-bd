@@ -1,12 +1,14 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const AuditLog = require('../models/AuditLog');
+const { parseUserAgent } = require('../utils/deviceParser');
 
 // Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'trackops_super_secret_jwt_key_2026_bd_secure_hash', {
+const generateToken = (id, sessionId = null) => {
+  return jwt.sign({ id, sessionId }, process.env.JWT_SECRET || 'trackops_super_secret_jwt_key_2026_bd_secure_hash', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 };
@@ -16,11 +18,20 @@ const generateToken = (id) => {
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, phone, password, confirmPassword } = req.body;
+    const { name, email, phone, password, confirmPassword, rank, currentPosting, posting } = req.body;
 
     // Validation
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, message: 'Full Name is required' });
+    }
+
+    if (!rank || !rank.trim()) {
+      return res.status(400).json({ success: false, message: 'Rank is required' });
+    }
+
+    const postingValue = (currentPosting || posting || '').trim();
+    if (!postingValue) {
+      return res.status(400).json({ success: false, message: 'Current Posting is required' });
     }
 
     if (!email && !phone) {
@@ -78,6 +89,10 @@ exports.register = async (req, res, next) => {
       passwordHash,
       role: 'USER',
       status: 'PENDING',
+      rank: rank.trim(),
+      posting: postingValue,
+      allowedDeviceLimit: 1,
+      activeSessions: [],
     });
 
     // Notify Super Admins
@@ -86,7 +101,7 @@ exports.register = async (req, res, next) => {
       await Notification.create({
         userId: sa._id,
         title: 'New Account Pending Approval',
-        message: `User ${user.name} (${user.email || user.phone}) registered and is awaiting approval.`,
+        message: `User ${user.name} (${user.rank || 'N/A'}, ${user.posting || 'N/A'}) registered and is awaiting approval.`,
         type: 'ACCOUNT_STATUS',
         metadata: { applicantId: user._id },
       });
@@ -97,7 +112,7 @@ exports.register = async (req, res, next) => {
       action: 'USER_REGISTERED',
       targetType: 'USER',
       targetId: user._id.toString(),
-      details: { name: user.name, email: user.email, phone: user.phone },
+      details: { name: user.name, email: user.email, phone: user.phone, rank: user.rank, posting: user.posting },
       ipAddress: req.ip,
     });
 
@@ -112,6 +127,8 @@ exports.register = async (req, res, next) => {
         phone: user.phone,
         role: user.role,
         status: user.status,
+        rank: user.rank,
+        posting: user.posting,
       },
     });
   } catch (error) {
@@ -158,7 +175,57 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    const token = generateToken(user._id);
+    // 1. Check if account is expired (Requirement 5)
+    if (user.role !== 'SUPER_ADMIN' && user.expiryDate) {
+      const expiryTime = new Date(user.expiryDate).getTime();
+      if (!isNaN(expiryTime) && expiryTime < Date.now()) {
+        return res.status(403).json({
+          success: false,
+          status: 'EXPIRED',
+          message: 'Your account access has expired. Please contact the administrator to renew access.',
+        });
+      }
+    }
+
+    // 2. Parse device info and check device login limit (Requirement 6)
+    const userAgent = req.headers['user-agent'] || '';
+    const parsedUA = parseUserAgent(userAgent);
+    const userSessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
+    const activeSessions = userSessions.filter((s) => s.status === 'ACTIVE');
+    const allowedLimit = user.allowedDeviceLimit != null ? Number(user.allowedDeviceLimit) : (user.role === 'SUPER_ADMIN' ? 5 : 1);
+
+    if (activeSessions.length >= allowedLimit) {
+      return res.status(403).json({
+        success: false,
+        status: 'DEVICE_LIMIT_REACHED',
+        message: 'You have reached your maximum allowed device limit. Please log out from an existing device or contact your administrator.',
+        allowedLimit,
+        activeSessions,
+        userId: user._id,
+      });
+    }
+
+    const sessionId = 'SES-' + crypto.randomBytes(8).toString('hex');
+    const deviceName = parsedUA.model && parsedUA.model !== 'Model unavailable'
+      ? `${parsedUA.manufacturer} ${parsedUA.model}`
+      : `${parsedUA.os} (${parsedUA.browser})`;
+
+    const newSession = {
+      sessionId,
+      deviceName,
+      browser: parsedUA.browser + (parsedUA.browserVersion ? ` ${parsedUA.browserVersion}` : ''),
+      operatingSystem: parsedUA.os + (parsedUA.osVersion ? ` ${parsedUA.osVersion}` : ''),
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      firstLogin: new Date(),
+      lastActive: new Date(),
+      status: 'ACTIVE',
+    };
+
+    userSessions.push(newSession);
+    user.activeSessions = userSessions;
+    await user.save();
+
+    const token = generateToken(user._id, sessionId);
 
     // Record login audit log
     await AuditLog.create({
@@ -167,6 +234,7 @@ exports.login = async (req, res, next) => {
       action: 'USER_LOGIN',
       targetType: 'AUTH',
       targetId: user._id.toString(),
+      details: { sessionId, deviceName, ip: req.ip },
       ipAddress: req.ip,
     });
 
@@ -180,6 +248,12 @@ exports.login = async (req, res, next) => {
         phone: user.phone,
         role: user.role,
         status: user.status,
+        rank: user.rank,
+        posting: user.posting,
+        activationDate: user.activationDate,
+        expiryDate: user.expiryDate,
+        allowedDeviceLimit: user.allowedDeviceLimit,
+        activeSessions: user.activeSessions,
         rejectionReason: user.rejectionReason,
         suspensionReason: user.suspensionReason,
         notificationPreferences: user.notificationPreferences,

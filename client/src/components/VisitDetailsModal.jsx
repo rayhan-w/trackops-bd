@@ -16,6 +16,11 @@ import {
   Camera,
   Layers,
   Radio,
+  Smartphone,
+  Monitor,
+  Cpu,
+  Maximize,
+  Compass,
 } from 'lucide-react';
 
 export default function VisitDetailsModal({ isOpen, onClose, visit, onCheckIp, onOpenLocation, onOpenPhoto }) {
@@ -371,7 +376,171 @@ export default function VisitDetailsModal({ isOpen, onClose, visit, onCheckIp, o
             </div>
           </div>
 
-          {/* SECTION D: PERMISSION HISTORY & MEDIA */}
+          {/* SECTION D: DEDICATED DEVICE INFORMATION (Requirement 9) */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <Smartphone className="w-3.5 h-3.5 text-sky-600" />
+              <span>DEVICE INFORMATION</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 text-xs">
+              {/* Card 1: Device Type */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Smartphone className="w-3 h-3 text-slate-400" />
+                    <span>Device Type</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5">
+                    {visit.browserInfo?.deviceType || (visit.browserInfo?.device === 'mobile' ? 'Mobile' : 'Desktop')}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(visit.browserInfo?.deviceType || 'Desktop', 'dev_type')}
+                  className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  title="Copy Device Type"
+                >
+                  {copiedKey === 'dev_type' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              {/* Card 2: Manufacturer */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Cpu className="w-3 h-3 text-slate-400" />
+                    <span>Manufacturer</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5">
+                    {visit.browserInfo?.manufacturer || 'N/A'}
+                  </span>
+                </div>
+                {visit.browserInfo?.manufacturer && visit.browserInfo?.manufacturer !== 'N/A' && (
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(visit.browserInfo.manufacturer, 'dev_mfg')}
+                    className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    title="Copy Manufacturer"
+                  >
+                    {copiedKey === 'dev_mfg' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+              </div>
+
+              {/* Card 3: Model */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Smartphone className="w-3 h-3 text-slate-400" />
+                    <span>Model</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5">
+                    {visit.browserInfo?.model || 'Model unavailable'}
+                  </span>
+                </div>
+                {visit.browserInfo?.model && visit.browserInfo?.model !== 'Model unavailable' && (
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(visit.browserInfo.model, 'dev_model')}
+                    className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    title="Copy Model"
+                  >
+                    {copiedKey === 'dev_model' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+              </div>
+
+              {/* Card 4: Operating System */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Monitor className="w-3 h-3 text-slate-400" />
+                    <span>Operating System</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5">
+                    {visit.browserInfo?.os || visit.browserInfo?.operatingSystem || 'N/A'}
+                    {visit.browserInfo?.osVersion && visit.browserInfo?.osVersion !== 'N/A' ? ` ${visit.browserInfo.osVersion}` : ''}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(`${visit.browserInfo?.os || 'OS'} ${visit.browserInfo?.osVersion || ''}`.trim(), 'dev_os')}
+                  className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  title="Copy OS"
+                >
+                  {copiedKey === 'dev_os' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              {/* Card 5: Browser */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Compass className="w-3 h-3 text-slate-400" />
+                    <span>Browser</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5">
+                    {visit.browserInfo?.browser || 'N/A'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(visit.browserInfo?.browser || 'N/A', 'dev_browser')}
+                  className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  title="Copy Browser"
+                >
+                  {copiedKey === 'dev_browser' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              {/* Card 6: Browser Version */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Hash className="w-3 h-3 text-slate-400" />
+                    <span>Browser Version</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5 font-mono">
+                    {visit.browserInfo?.browserVersion || 'N/A'}
+                  </span>
+                </div>
+                {visit.browserInfo?.browserVersion && visit.browserInfo?.browserVersion !== 'N/A' && (
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(visit.browserInfo.browserVersion, 'dev_bv')}
+                    className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    title="Copy Version"
+                  >
+                    {copiedKey === 'dev_bv' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+              </div>
+
+              {/* Card 7: Screen Category */}
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 flex items-center justify-between group">
+                <div className="min-w-0 pr-1">
+                  <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-medium">
+                    <Maximize className="w-3 h-3 text-slate-400" />
+                    <span>Screen Category</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-xs truncate block mt-0.5">
+                    {visit.browserInfo?.screenCategory || (visit.browserInfo?.screenResolution ? (parseInt(visit.browserInfo.screenResolution) < 768 ? 'Mobile Screen' : 'Desktop Screen') : 'N/A')}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(visit.browserInfo?.screenCategory || 'Standard', 'dev_screen')}
+                  className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  title="Copy Screen Category"
+                >
+                  {copiedKey === 'dev_screen' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION E: PERMISSION HISTORY & MEDIA */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
             {/* Permission History */}
             <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">

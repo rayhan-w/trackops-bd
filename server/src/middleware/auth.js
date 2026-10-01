@@ -31,7 +31,32 @@ const protect = async (req, res, next) => {
       });
     }
 
+    // Account Expiry Check (Requirement 5)
+    if (user.role !== 'SUPER_ADMIN' && user.expiryDate) {
+      const expiryTime = new Date(user.expiryDate).getTime();
+      if (!isNaN(expiryTime) && expiryTime < Date.now()) {
+        return res.status(403).json({
+          success: false,
+          status: 'EXPIRED',
+          message: 'Your account access has expired. Please contact the administrator to renew access.',
+        });
+      }
+    }
+
+    // Session Revocation Check (Requirement 6)
+    if (decoded.sessionId && Array.isArray(user.activeSessions)) {
+      const sess = user.activeSessions.find((s) => s.sessionId === decoded.sessionId);
+      if (sess && sess.status === 'REVOKED') {
+        return res.status(401).json({
+          success: false,
+          status: 'SESSION_REVOKED',
+          message: 'Your device session has been revoked by administration or logged out. Please log in again.',
+        });
+      }
+    }
+
     req.user = user;
+    req.sessionId = decoded.sessionId || null;
     next();
   } catch (error) {
     return res.status(401).json({

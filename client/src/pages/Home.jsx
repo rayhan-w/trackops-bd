@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ExploreToolsSection from '../components/ExploreToolsSection';
 
 export default function Home() {
   return (
@@ -453,6 +454,9 @@ export default function Home() {
 
         </div>
       </section>
+
+      {/* EXPLORE RELATED TOOLS SECTION (Requirement 1) */}
+      <ExploreToolsSection />
 
       {/* COMPLIANCE & ETHICAL ETHOS BANNER */}
       <section id="compliance" className="py-16 bg-[#FBFBFA] border-t border-stone-200/60">

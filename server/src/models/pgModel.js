@@ -73,6 +73,11 @@ async function populateField(item, pop, pool) {
           if (r.phone != null) d.phone = r.phone;
           if (r.role != null) d.role = r.role;
           if (r.status != null) d.status = r.status;
+          if (r.rank != null) d.rank = r.rank;
+          if (r.posting != null) { d.posting = r.posting; d.currentPosting = r.posting; }
+          if (r.activation_date != null) d.activationDate = r.activation_date;
+          if (r.expiry_date !== undefined) d.expiryDate = r.expiry_date;
+          if (r.allowed_device_limit != null) d.allowedDeviceLimit = Number(r.allowed_device_limit);
         } else if (targetTable === 'links') {
           if (r.short_code != null) { d.shortCode = r.short_code; d.short_code = r.short_code; }
           if (r.destination_url != null) { d.destinationUrl = r.destination_url; d.destination_url = r.destination_url; }
@@ -382,12 +387,19 @@ function createModel(tableName, methods = {}) {
             res = await pool.query(
               `INSERT INTO users (
                 id, name, email, phone, password_hash, role, status, approved_by, approved_at,
+                rank, posting, activation_date, expiry_date, allowed_device_limit, active_sessions,
                 notification_preferences, data, created_at, updated_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
               ON CONFLICT (email) DO UPDATE SET
                 password_hash = EXCLUDED.password_hash,
                 role = EXCLUDED.role,
                 status = EXCLUDED.status,
+                rank = EXCLUDED.rank,
+                posting = EXCLUDED.posting,
+                activation_date = EXCLUDED.activation_date,
+                expiry_date = EXCLUDED.expiry_date,
+                allowed_device_limit = EXCLUDED.allowed_device_limit,
+                active_sessions = EXCLUDED.active_sessions,
                 data = EXCLUDED.data,
                 updated_at = EXCLUDED.updated_at
               RETURNING *`,
@@ -401,6 +413,12 @@ function createModel(tableName, methods = {}) {
                 doc.status || 'PENDING',
                 doc.approvedBy || doc.approved_by || null,
                 doc.approvedAt || null,
+                doc.rank || null,
+                doc.posting || doc.currentPosting || null,
+                doc.activationDate ? new Date(doc.activationDate) : null,
+                doc.expiryDate ? new Date(doc.expiryDate) : null,
+                doc.allowedDeviceLimit != null ? Number(doc.allowedDeviceLimit) : 1,
+                JSON.stringify(doc.activeSessions || []),
                 JSON.stringify(doc.notificationPreferences || {}),
                 JSON.stringify(doc),
                 doc.createdAt,
@@ -457,6 +475,16 @@ function createModel(tableName, methods = {}) {
               if (r.password_hash != null) d.passwordHash = r.password_hash;
               if (r.role != null) d.role = r.role;
               if (r.status != null) d.status = r.status;
+              if (r.rank != null) d.rank = r.rank;
+              if (r.posting != null) { d.posting = r.posting; d.currentPosting = r.posting; }
+              if (r.activation_date != null) d.activationDate = r.activation_date;
+              if (r.expiry_date !== undefined) d.expiryDate = r.expiry_date;
+              if (r.allowed_device_limit != null) d.allowedDeviceLimit = Number(r.allowed_device_limit);
+              if (r.active_sessions != null) {
+                try {
+                  d.activeSessions = typeof r.active_sessions === 'string' ? JSON.parse(r.active_sessions) : r.active_sessions;
+                } catch (e) { d.activeSessions = []; }
+              }
               if (r.short_code != null) { d.shortCode = r.short_code; d.short_code = r.short_code; }
               if (r.owner_id != null) { d.ownerId = r.owner_id; d.owner_id = r.owner_id; }
               if (r.destination_url != null) { d.destinationUrl = r.destination_url; d.destination_url = r.destination_url; }
@@ -637,8 +665,14 @@ function createModel(tableName, methods = {}) {
                  password_hash = COALESCE($5, password_hash),
                  role = COALESCE($6, role),
                  status = COALESCE($7, status),
-                 data = $8,
-                 updated_at = $9
+                 rank = COALESCE($8, rank),
+                 posting = COALESCE($9, posting),
+                 activation_date = COALESCE($10, activation_date),
+                 expiry_date = COALESCE($11, expiry_date),
+                 allowed_device_limit = COALESCE($12, allowed_device_limit),
+                 active_sessions = COALESCE($13, active_sessions),
+                 data = $14,
+                 updated_at = $15
                WHERE id = $1`,
               [
                 stringId,
@@ -648,6 +682,12 @@ function createModel(tableName, methods = {}) {
                 updated.passwordHash || updated.password_hash || null,
                 updated.role || null,
                 updated.status || null,
+                updated.rank || null,
+                updated.posting || updated.currentPosting || null,
+                updated.activationDate ? new Date(updated.activationDate) : null,
+                updated.expiryDate ? new Date(updated.expiryDate) : null,
+                updated.allowedDeviceLimit != null ? Number(updated.allowedDeviceLimit) : null,
+                updated.activeSessions ? JSON.stringify(updated.activeSessions) : null,
                 JSON.stringify(updated),
                 updated.updatedAt,
               ]

@@ -22,6 +22,7 @@ import {
 import Sidebar from '../components/Sidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import Footer from '../components/Footer';
+import ExploreToolsSection from '../components/ExploreToolsSection';
 import { api } from '../services/api';
 
 export default function Dashboard() {
@@ -398,6 +399,9 @@ export default function Dashboard() {
               })}
             </div>
           )}
+
+          {/* Useful Tools Section (Requirement 1) */}
+          <ExploreToolsSection variant="compact" />
         </main>
         <Footer />
       </div>

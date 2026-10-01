@@ -374,3 +374,222 @@ exports.getAuditLogs = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Update user account activation & expiry date
+// @route   PATCH /api/users/:id/expiry
+// @access  Private (SUPER_ADMIN, ADMIN)
+exports.updateUserExpiry = async (req, res, next) => {
+  try {
+    const { activationDate, expiryDate, durationDays, status } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (activationDate) {
+      user.activationDate = new Date(activationDate);
+    }
+    if (expiryDate) {
+      user.expiryDate = new Date(expiryDate);
+    } else if (durationDays) {
+      const base = user.activationDate ? new Date(user.activationDate) : new Date();
+      user.expiryDate = new Date(base.getTime() + Number(durationDays) * 24 * 60 * 60 * 1000);
+    }
+    if (status) {
+      user.status = status;
+    }
+
+    await user.save();
+
+    await AuditLog.create({
+      performedBy: req.user._id,
+      performedByName: req.user.name,
+      action: 'UPDATE_USER_EXPIRY',
+      targetType: 'USER',
+      targetId: user._id.toString(),
+      details: {
+        userName: user.name,
+        activationDate: user.activationDate,
+        expiryDate: user.expiryDate,
+        durationDays,
+        status: user.status,
+      },
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: `Account timeline updated for ${user.name}`,
+      user: {
+        id: user._id,
+        activationDate: user.activationDate,
+        expiryDate: user.expiryDate,
+        status: user.status,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update user allowed device limit
+// @route   PATCH /api/users/:id/device-limit
+// @access  Private (SUPER_ADMIN, ADMIN)
+exports.updateDeviceLimit = async (req, res, next) => {
+  try {
+    const { allowedDeviceLimit } = req.body;
+    const limit = Number(allowedDeviceLimit);
+    if (!limit || limit < 1 || limit > 10) {
+      return res.status(400).json({ success: false, message: 'Allowed device limit must be between 1 and 10' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.allowedDeviceLimit = limit;
+    await user.save();
+
+    await AuditLog.create({
+      performedBy: req.user._id,
+      performedByName: req.user.name,
+      action: 'UPDATE_DEVICE_LIMIT',
+      targetType: 'USER',
+      targetId: user._id.toString(),
+      details: { userName: user.name, allowedDeviceLimit: limit },
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: `Allowed device limit updated to ${limit} for ${user.name}`,
+      user: {
+        id: user._id,
+        allowedDeviceLimit: user.allowedDeviceLimit,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user active & past sessions
+// @route   GET /api/users/:id/sessions
+// @access  Private (SUPER_ADMIN, ADMIN, or self)
+exports.getUserSessions = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN' && req.user._id.toString() !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to view these sessions' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const sessions = Array.isArray(user.activeSessions) ? user.activeSessions : [];
+
+    res.json({
+      success: true,
+      userId: user._id,
+      userName: user.name,
+      allowedDeviceLimit: user.allowedDeviceLimit || 1,
+      sessions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Revoke specific device session
+// @route   DELETE /api/users/:id/sessions/:sessionId
+// @access  Private (SUPER_ADMIN, ADMIN, or self)
+exports.revokeUserSession = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN' && req.user._id.toString() !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to revoke this session' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const sessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
+    const sessionIndex = sessions.findIndex((s) => s.sessionId === req.params.sessionId);
+
+    if (sessionIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Session not found' });
+    }
+
+    sessions[sessionIndex].status = 'REVOKED';
+    sessions[sessionIndex].revokedAt = new Date();
+    sessions[sessionIndex].revokedBy = req.user.name;
+
+    user.activeSessions = sessions;
+    await user.save();
+
+    await AuditLog.create({
+      performedBy: req.user._id,
+      performedByName: req.user.name,
+      action: 'REVOKE_SESSION',
+      targetType: 'USER',
+      targetId: user._id.toString(),
+      details: { sessionId: req.params.sessionId, userName: user.name },
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: 'Device session revoked successfully',
+      sessions: user.activeSessions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Revoke all sessions for a user
+// @route   DELETE /api/users/:id/sessions
+// @access  Private (SUPER_ADMIN, ADMIN, or self)
+exports.revokeAllUserSessions = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN' && req.user._id.toString() !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to revoke these sessions' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const sessions = (Array.isArray(user.activeSessions) ? user.activeSessions : []).map((s) => ({
+      ...s,
+      status: 'REVOKED',
+      revokedAt: new Date(),
+      revokedBy: req.user.name,
+    }));
+
+    user.activeSessions = sessions;
+    await user.save();
+
+    await AuditLog.create({
+      performedBy: req.user._id,
+      performedByName: req.user.name,
+      action: 'REVOKE_ALL_SESSIONS',
+      targetType: 'USER',
+      targetId: user._id.toString(),
+      details: { userName: user.name },
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: 'All device sessions revoked successfully',
+      sessions: user.activeSessions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

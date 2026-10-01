@@ -138,8 +138,8 @@ const SPA_HTML = `<!doctype html>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-RC-_bMhU.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-PZWll0CF.css">
+    <script type="module" crossorigin src="/assets/index-BTbuEMrh.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-F8SnLJ4J.css">
   </head>
   <body class="bg-[#FBFBFA] text-[#0F172A] antialiased font-sans">
     <div id="root"></div>
@@ -155,18 +155,23 @@ app.get('/l/:shortCode', (req, res) => {
 
 // SPA routes — all served with the React shell
 app.get([
+  '/',
   '/v/:shortCode',
   '/login', '/register', '/dashboard',
   '/links', '/links/*',
   '/visitor-activity', '/visitor-activity/*',
   '/analytics', '/approval-pending',
-  '/account-suspended', '/account-rejected',
+  '/account-suspended', '/account-rejected', '/account-expired',
   '/settings', '/notifications',
   '/telecom-gateway', '/cell-converter',
+  '/admin/users', '/admin/audit-logs',
 ], sendSpa);
 
-// Root fallback
-app.get('/', sendSpa);
+// Root & catch-all fallback
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  sendSpa(req, res);
+});
 
 // Centralized Error Handler
 app.use(errorHandler);

@@ -4,6 +4,7 @@ const LinkVisit = require('../models/LinkVisit');
 const ConsentRecord = require('../models/ConsentRecord');
 const Notification = require('../models/Notification');
 const { lookupIp } = require('../services/ipService');
+const { parseUserAgent } = require('../utils/deviceParser');
 
 // Helper to hash IP address for privacy
 const hashIp = (ip) => {
@@ -151,6 +152,22 @@ exports.recordConsent = async (req, res, next) => {
     const clientIp = getClientIp(req);
     const ipDetails = await lookupIp(clientIp);
 
+    const parsedUA = parseUserAgent(req.headers['user-agent'] || '');
+    const mergedBrowserInfo = {
+      ...(browserInfo || {}),
+      deviceType: parsedUA.deviceType || (browserInfo && browserInfo.deviceType) || 'Desktop',
+      manufacturer: parsedUA.manufacturer || (browserInfo && browserInfo.manufacturer) || 'N/A',
+      model: parsedUA.model || (browserInfo && browserInfo.model) || 'Model unavailable',
+      os: parsedUA.os || (browserInfo && browserInfo.os) || 'Unknown OS',
+      osVersion: parsedUA.osVersion || (browserInfo && browserInfo.osVersion) || 'N/A',
+      browser: parsedUA.browser || (browserInfo && browserInfo.browser) || 'Unknown Browser',
+      browserVersion: parsedUA.browserVersion || (browserInfo && browserInfo.browserVersion) || 'N/A',
+      screenCategory: browserInfo && browserInfo.screenResolution
+        ? (parseInt(browserInfo.screenResolution) < 768 ? 'Mobile Screen' : 'Desktop Screen')
+        : (browserInfo && browserInfo.screenCategory) || 'Standard',
+      userAgent: req.headers['user-agent'] || (browserInfo && browserInfo.userAgent) || '',
+    };
+
     // 2. Create LinkVisit
     const now = new Date();
     const visit = await LinkVisit.create({
@@ -200,7 +217,7 @@ exports.recordConsent = async (req, res, next) => {
       voluntarilySharedCamera: isCameraVoluntary,
       cameraSnapshot: isCameraVoluntary ? cameraSnapshot : null,
       browserInfoShared: Boolean(browserInfoGranted),
-      browserInfo: browserInfoGranted && browserInfo ? browserInfo : {},
+      browserInfo: mergedBrowserInfo,
     });
 
     // 3. Increment counters
@@ -256,6 +273,19 @@ exports.skipConsent = async (req, res, next) => {
     const clientIp = getClientIp(req);
     const ipDetails = await lookupIp(clientIp);
 
+    const parsedUA = parseUserAgent(req.headers['user-agent'] || '');
+    const skippedBrowserInfo = {
+      deviceType: parsedUA.deviceType || 'Desktop',
+      manufacturer: parsedUA.manufacturer || 'N/A',
+      model: parsedUA.model || 'Model unavailable',
+      os: parsedUA.os || 'Unknown OS',
+      osVersion: parsedUA.osVersion || 'N/A',
+      browser: parsedUA.browser || 'Unknown Browser',
+      browserVersion: parsedUA.browserVersion || 'N/A',
+      screenCategory: 'Standard',
+      userAgent: req.headers['user-agent'] || '',
+    };
+
     // Record skipped visit
     const visit = await LinkVisit.create({
       linkId: link._id,
@@ -299,6 +329,7 @@ exports.skipConsent = async (req, res, next) => {
       voluntarilySharedLocation: false,
       voluntarilySharedCamera: false,
       browserInfoShared: false,
+      browserInfo: skippedBrowserInfo,
       timestamp: now,
       visitTimestamp: now,
       consentTimestamp: now,
