@@ -219,7 +219,7 @@ export default function VisitorActivity() {
               <select
                 value={selectedLinkId}
                 onChange={(e) => setSelectedLinkId(e.target.value)}
-                className="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
+                className="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none w-full sm:w-auto"
               >
                 <option value="ALL">All Investigation Links</option>
                 {links.map((lnk) => (
@@ -231,7 +231,7 @@ export default function VisitorActivity() {
             </div>
 
             {/* Action buttons: IP Request, CSV File, Refresh */}
-            <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-start sm:justify-end">
               {/* Action 1: IP Request */}
               <button
                 type="button"

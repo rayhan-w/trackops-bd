@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { X, Shield } from 'lucide-react';
 
 // Official WhatsApp inline SVG
@@ -17,6 +18,13 @@ function WhatsAppIcon({ className = 'w-6 h-6' }) {
 }
 
 export default function WhatsAppContactCard() {
+  const location = useLocation();
+
+  // Hide WhatsApp contact card completely on generated tracking links
+  if (location.pathname.startsWith('/v/') || location.pathname.startsWith('/l/')) {
+    return null;
+  }
+
   const [minimized, setMinimized] = useState(() => {
     try {
       return localStorage.getItem('trackops_wa_minimized') === 'true';

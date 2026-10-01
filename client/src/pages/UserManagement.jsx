@@ -345,7 +345,7 @@ export default function UserManagement() {
 
             <div className="flex flex-wrap items-center gap-2 text-xs w-full md:w-auto">
               {/* Status Filter */}
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 overflow-x-auto pb-1 max-w-full">
                 {['ALL', 'PENDING', 'APPROVED', 'SUSPENDED', 'REJECTED'].map((st) => (
                   <button
                     key={st}
@@ -614,7 +614,7 @@ export default function UserManagement() {
       {/* MODAL 1: Account Expiry & Duration Management */}
       {selectedUser && actionType === 'EXPIRY' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-stone-200 shadow-2xl">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-stone-200 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <div className="flex items-center space-x-2.5">
                 <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
@@ -901,7 +901,7 @@ export default function UserManagement() {
       {/* MODAL 3: General Action Confirmation (Reject, Suspend, Role, Delete) */}
       {selectedUser && (actionType === 'REJECT' || actionType === 'SUSPEND' || actionType === 'ROLE' || actionType === 'DELETE') && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 border border-stone-200 shadow-2xl">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 border border-stone-200 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <h3 className="font-bold text-base text-slate-900">
                 {actionType === 'REJECT' && 'Reject Applicant Registration'}

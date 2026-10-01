@@ -104,13 +104,13 @@ export default function IpAnalysisModal({ isOpen, onClose, initialIp = '103.199.
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
       <div className="bg-white rounded-3xl max-w-5xl w-full border border-slate-200/90 shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-white">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-white">
+          <div className="flex items-center space-x-3 sm:space-x-3.5">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25">
               <Globe className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-xl text-[#0B192C] tracking-tight">IP Address Analysis</h3>
+              <h3 className="font-extrabold text-lg sm:text-xl text-[#0B192C] tracking-tight">IP Address Analysis</h3>
               <p className="text-xs text-slate-500 font-medium">
                 Authorized regional IP intelligence & carrier network routing data
               </p>
@@ -126,7 +126,7 @@ export default function IpAnalysisModal({ isOpen, onClose, initialIp = '103.199.
         </div>
 
         {/* Toolbar & Search */}
-        <div className="p-6 bg-slate-50/60 border-b border-slate-100 flex-shrink-0">
+        <div className="p-4 sm:p-6 bg-slate-50/60 border-b border-slate-100 flex-shrink-0">
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -158,7 +158,7 @@ export default function IpAnalysisModal({ isOpen, onClose, initialIp = '103.199.
         </div>
 
         {/* Content Cards Grid */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {error ? (
             <div className="p-8 text-center text-red-600 text-xs font-semibold">{error}</div>
           ) : (

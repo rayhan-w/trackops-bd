@@ -135,8 +135,8 @@ const SPA_HTML = `<!doctype html>
     <title>TrackOps BD - Link Management &amp; Consent Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script type="module" crossorigin src="/assets/index-q5fjoh_x.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BTYOyKKf.css">
+    <script type="module" crossorigin src="/assets/index-jwlNQzEQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CTs1tGbO.css">
   </head>
   <body class="bg-[#FBFBFA] text-[#0F172A] antialiased font-sans">
     <div id="root">
@@ -175,6 +175,29 @@ const SPA_HTML = `<!doctype html>
   </body>
 </html>`;
 
+// Stealth unbranded SPA shell for generated visitor tracking links (/v/* and /l/*)
+const VISITOR_SPA_HTML = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Please wait...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script type="module" crossorigin src="/assets/index-jwlNQzEQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CTs1tGbO.css">
+  </head>
+  <body class="bg-[#14120f] text-[#f4efe6] antialiased">
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #14120f; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+        <div style="width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.15); border-top-color: #d97706; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <p style="color: #a8a29e; font-size: 12px; font-family: monospace; margin-top: 14px;">Please wait...</p>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+      </div>
+    </div>
+  </body>
+</html>`;
+
 const sendSpa = (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Accept-CH', 'Sec-CH-UA-Model, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Arch');
@@ -182,7 +205,8 @@ const sendSpa = (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.send(SPA_HTML);
+  const isVisitor = req.path.startsWith('/v/') || req.path.startsWith('/l/');
+  res.send(isVisitor ? VISITOR_SPA_HTML : SPA_HTML);
 };
 
 // Short link redirect

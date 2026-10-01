@@ -389,7 +389,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center space-x-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start sm:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
                       {/* Copy Short Link */}
                       <button
                         onClick={() => handleCopy(fullUrl, link._id)}
@@ -458,7 +458,7 @@ export default function Dashboard() {
       {/* Edit Link Modal */}
       {editingLink && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <h3 className="font-bold text-base text-[#0B192C]">Edit Short Link</h3>
               <button

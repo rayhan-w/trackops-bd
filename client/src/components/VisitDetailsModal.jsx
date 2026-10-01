@@ -77,13 +77,13 @@ export default function VisitDetailsModal({ isOpen, onClose, visit, onCheckIp, o
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
       <div className="bg-white rounded-3xl max-w-4xl w-full border border-slate-200/90 shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
         {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-white">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100 shadow-sm">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-white">
+          <div className="flex items-center space-x-3 sm:space-x-3.5">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100 shadow-sm">
               <Info className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-xl text-[#0B192C] tracking-tight">Visit details</h3>
+              <h3 className="font-extrabold text-lg sm:text-xl text-[#0B192C] tracking-tight">Visit details</h3>
               <p className="text-xs text-slate-500 font-medium">
                 Everything captured on {formattedDate}
               </p>
@@ -99,7 +99,7 @@ export default function VisitDetailsModal({ isOpen, onClose, visit, onCheckIp, o
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-slate-800">
           {/* SECTION A: OVERVIEW (Matches Screenshot 1) */}
           <div className="space-y-3">
             <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">

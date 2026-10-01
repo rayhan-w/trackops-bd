@@ -331,7 +331,7 @@ export default function VisitorConsentPage() {
       <div className="min-h-screen bg-[#181512] text-[#f4efe6] flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-8 h-8 border-3 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-xs text-stone-400 mt-3 font-mono">Loading portal...</p>
+          <p className="text-xs text-stone-400 mt-3 font-mono">Please wait...</p>
         </div>
       </div>
     );
@@ -349,10 +349,12 @@ export default function VisitorConsentPage() {
             {errorData?.message || 'This inquiry link is inactive or expired.'}
           </p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              window.location.href = 'https://google.com';
+            }}
             className="px-5 py-2 bg-stone-800 text-stone-300 text-xs rounded-xl hover:bg-stone-700"
           >
-            Return Home
+            Close
           </button>
         </div>
       </div>

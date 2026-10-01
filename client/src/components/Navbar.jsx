@@ -133,13 +133,26 @@ export default function Navbar() {
           </a>
           <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
             {isAuthenticated ? (
-              <Link
-                to={user?.role === 'SUPER_ADMIN' ? '/admin/users' : '/dashboard'}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 rounded-full font-semibold shadow-md shadow-orange-500/20"
-              >
-                Go to Dashboard
-              </Link>
+              <>
+                <Link
+                  to={user?.role === 'SUPER_ADMIN' ? '/admin/users' : '/dashboard'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 rounded-full font-semibold shadow-md shadow-orange-500/20"
+                >
+                  Go to Dashboard
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                    navigate('/');
+                  }}
+                  className="w-full text-center border border-stone-300 text-stone-700 py-2.5 rounded-full font-semibold hover:bg-stone-100 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </>
             ) : (
               <>
                 <Link
