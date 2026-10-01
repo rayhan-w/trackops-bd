@@ -291,10 +291,19 @@ export default function LinkDetails() {
                           )}
                         </td>
                         <td className="py-3 px-4 font-sans text-slate-700 whitespace-nowrap">
-                          {v.browserInfo?.os || 'Standard Browser'}{' '}
-                          <span className="text-slate-400 text-[10px]">
-                            ({v.browserInfo?.browser || 'Web'})
-                          </span>
+                          <div className="flex items-center space-x-1.5 flex-wrap">
+                            {v.browserInfo?.manufacturer && v.browserInfo?.manufacturer !== 'N/A' && v.browserInfo?.manufacturer !== 'Unknown' && (
+                              <span className="px-1.5 py-0.2 bg-blue-50 text-blue-700 text-[9px] font-extrabold rounded border border-blue-200/60 uppercase">
+                                {v.browserInfo.manufacturer}
+                              </span>
+                            )}
+                            <span className="font-bold text-xs text-slate-800">
+                              {v.browserInfo?.model || v.browserInfo?.deviceName || (v.browserInfo?.device === 'mobile' ? 'Mobile Smartphone' : 'Desktop')}
+                            </span>
+                          </div>
+                          <div className="text-slate-400 text-[10px] mt-0.5 font-medium">
+                            {v.browserInfo?.os || 'OS'} {v.browserInfo?.osVersion && v.browserInfo?.osVersion !== 'N/A' ? v.browserInfo.osVersion : ''} • {v.browserInfo?.browser || 'Browser'}
+                          </div>
                         </td>
                         <td className="py-3 px-4 text-slate-400 text-[11px] truncate max-w-[100px]">
                           {v.ipHash || v.visitorSessionId?.slice(0, 10) || '—'}

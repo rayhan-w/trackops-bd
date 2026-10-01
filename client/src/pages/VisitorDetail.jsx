@@ -426,50 +426,69 @@ export default function VisitorDetail() {
                   </div>
 
                   {/* Device Information & Browser Telemetry (Requirement 8) */}
-                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                    <div className="font-sans font-bold text-slate-800 pb-1.5 border-b border-slate-200 flex items-center justify-between">
-                      <span>DEVICE INFORMATION</span>
-                      <span className="text-[10px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded font-semibold">
-                        Standards-Based
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                    <div className="font-sans font-bold text-slate-800 pb-2 border-b border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Smartphone className="w-4 h-4 text-blue-600" />
+                        <span className="text-slate-800 font-extrabold uppercase tracking-wider text-xs">Visitor Device Information</span>
+                      </div>
+                      <span className="text-[10px] text-blue-700 bg-blue-100/70 border border-blue-200/60 px-2 py-0.5 rounded-full font-bold">
+                        Hardware Identified
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+
+                    {/* Prominent Model Banner */}
+                    <div className="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
                       <div>
-                        <span className="text-slate-400 block text-[10px]">Device Type:</span>
-                        <strong className="text-slate-800">
+                        <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Detected Hardware Model</div>
+                        <div className="text-base font-extrabold text-slate-900 mt-0.5 flex items-center space-x-2">
+                          <span>{activity.browserInfo?.model || activity.browserInfo?.deviceName || 'Model unavailable'}</span>
+                          {activity.browserInfo?.manufacturer && activity.browserInfo?.manufacturer !== 'N/A' && (
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md border border-blue-200/60 uppercase">
+                              {activity.browserInfo.manufacturer}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-[11px]">
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                        <span className="text-slate-400 block text-[10px] font-semibold">Device Type</span>
+                        <strong className="text-slate-800 mt-0.5 block">
                           {activity.browserInfo?.deviceType || (activity.browserInfo?.device === 'mobile' ? 'Mobile' : 'Desktop')}
                         </strong>
                       </div>
-                      <div>
-                        <span className="text-slate-400 block text-[10px]">Manufacturer:</span>
-                        <strong className="text-slate-800">
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                        <span className="text-slate-400 block text-[10px] font-semibold">Manufacturer</span>
+                        <strong className="text-slate-800 mt-0.5 block">
                           {activity.browserInfo?.manufacturer && activity.browserInfo?.manufacturer !== 'Unknown' ? activity.browserInfo.manufacturer : 'N/A'}
                         </strong>
                       </div>
-                      <div>
-                        <span className="text-slate-400 block text-[10px]">Model:</span>
-                        <strong className="text-slate-800">
-                          {activity.browserInfo?.model || 'Model unavailable'}
-                        </strong>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block text-[10px]">Operating System:</span>
-                        <strong className="text-slate-800">
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                        <span className="text-slate-400 block text-[10px] font-semibold">Operating System</span>
+                        <strong className="text-slate-800 mt-0.5 block">
                           {activity.browserInfo?.os || 'N/A'}
                           {activity.browserInfo?.osVersion && activity.browserInfo?.osVersion !== 'N/A' ? ` ${activity.browserInfo.osVersion}` : ''}
                         </strong>
                       </div>
-                      <div>
-                        <span className="text-slate-400 block text-[10px]">Browser:</span>
-                        <strong className="text-slate-800">
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                        <span className="text-slate-400 block text-[10px] font-semibold">Browser</span>
+                        <strong className="text-slate-800 mt-0.5 block">
                           {activity.browserInfo?.browser || 'N/A'}
                           {activity.browserInfo?.browserVersion && activity.browserInfo?.browserVersion !== 'N/A' ? ` ${activity.browserInfo.browserVersion}` : ''}
                         </strong>
                       </div>
-                      <div>
-                        <span className="text-slate-400 block text-[10px]">Screen Category:</span>
-                        <strong className="text-slate-800">
-                          {activity.browserInfo?.screenCategory || (activity.browserInfo?.screenResolution ? (parseInt(activity.browserInfo.screenResolution) < 768 ? 'Mobile Screen' : 'Desktop Screen') : 'Standard')}
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                        <span className="text-slate-400 block text-[10px] font-semibold">Screen Resolution</span>
+                        <strong className="text-slate-800 mt-0.5 block">
+                          {activity.browserInfo?.screenResolution || 'Standard'}
+                        </strong>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                        <span className="text-slate-400 block text-[10px] font-semibold">Screen Category</span>
+                        <strong className="text-slate-800 mt-0.5 block">
+                          {activity.browserInfo?.screenCategory || 'Standard'}
                         </strong>
                       </div>
                     </div>

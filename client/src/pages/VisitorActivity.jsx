@@ -324,9 +324,11 @@ export default function VisitorActivity() {
                       });
 
                       const ip = act.ipAddress || act.ipv4 || '103.199.109.91';
-                      const deviceType = act.browserInfo?.device || 'Desktop';
+                      const deviceType = act.browserInfo?.deviceType || act.browserInfo?.device || 'Desktop';
                       const os = act.browserInfo?.os || 'Windows';
                       const browser = act.browserInfo?.browser || 'Chrome';
+                      const model = act.browserInfo?.model || act.browserInfo?.deviceName || (deviceType === 'Mobile' ? 'Smartphone' : 'Workstation');
+                      const manufacturer = act.browserInfo?.manufacturer && act.browserInfo?.manufacturer !== 'N/A' && act.browserInfo?.manufacturer !== 'Unknown' ? act.browserInfo.manufacturer : null;
                       const hasPhoto = Boolean(act.cameraSnapshot || act.voluntarilySharedCamera);
 
                       const DeviceIcon =
@@ -347,21 +349,25 @@ export default function VisitorActivity() {
                             </span>
                           </td>
 
-                          {/* 3. DEVICE: Icon + Desktop [Windows] + subtext */}
+                          {/* 3. DEVICE: Icon + Model Name [Brand Badge] + OS • Browser */}
                           <td className="py-4 px-6 whitespace-nowrap">
                             <div className="flex items-center space-x-3">
                               <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100">
                                 <DeviceIcon className="w-4 h-4" />
                               </div>
-                              <div>
-                                <div className="flex items-center space-x-1.5">
-                                  <span className="font-bold text-slate-800 text-xs">{deviceType}</span>
-                                  <span className="px-1.5 py-0.2 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded border border-blue-200/60">
-                                    {os}
+                              <div className="min-w-0">
+                                <div className="flex items-center space-x-1.5 flex-wrap">
+                                  {manufacturer && (
+                                    <span className="px-1.5 py-0.2 bg-blue-50 text-blue-700 text-[10px] font-extrabold rounded border border-blue-200/60 uppercase tracking-wider">
+                                      {manufacturer}
+                                    </span>
+                                  )}
+                                  <span className="font-bold text-slate-800 text-xs truncate max-w-[200px]" title={model}>
+                                    {model}
                                   </span>
                                 </div>
-                                <div className="text-[11px] text-slate-400 mt-0.5">
-                                  {os} • {browser}
+                                <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
+                                  {os} {act.browserInfo?.osVersion && act.browserInfo?.osVersion !== 'N/A' ? act.browserInfo.osVersion : ''} • {browser}
                                 </div>
                               </div>
                             </div>

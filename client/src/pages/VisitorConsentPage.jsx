@@ -9,6 +9,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { api } from '../services/api';
+import { detectCurrentDevice } from '../utils/deviceHelper';
 
 export default function VisitorConsentPage() {
   const { shortCode } = useParams();
@@ -36,28 +37,44 @@ export default function VisitorConsentPage() {
   const [browserInfo, setBrowserInfo] = useState({});
 
   useEffect(() => {
-    const ua = navigator.userAgent;
-    let browser = 'Chrome';
-    let os = 'Windows';
-
-    if (ua.includes('Windows')) os = 'Windows';
-    else if (ua.includes('Macintosh')) os = 'macOS';
-    else if (ua.includes('Android')) os = 'Android';
-    else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-    else if (ua.includes('Linux')) os = 'Linux';
-
-    if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
-    else if (ua.includes('Edg')) browser = 'Edge';
-    else if (ua.includes('Firefox')) browser = 'Firefox';
-    else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
-
-    setBrowserInfo({
-      browser,
-      os,
-      screenResolution: `${window.screen.width}x${window.screen.height}`,
-      language: navigator.language || 'en-US',
-      device: /Mobi|Android/i.test(ua) ? 'Mobile' : 'Desktop',
-    });
+    let isMounted = true;
+    async function collectClientInfo() {
+      try {
+        const deviceInfo = await detectCurrentDevice();
+        if (isMounted) {
+          setBrowserInfo({
+            ...deviceInfo,
+            device: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
+            deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
+            deviceName: deviceInfo.model || 'Unknown Device',
+            model: deviceInfo.model,
+            rawModel: deviceInfo.rawModel,
+            manufacturer: deviceInfo.manufacturer,
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            screenCategory: window.innerWidth < 768 ? 'Mobile Screen' : 'Desktop Screen',
+            language: navigator.language || 'en-US',
+            platform: deviceInfo.platform || navigator.platform,
+            platformVersion: deviceInfo.platformVersion,
+            hardwareConcurrency: navigator.hardwareConcurrency || null,
+            deviceMemory: navigator.deviceMemory || null,
+          });
+        }
+      } catch (err) {
+        if (isMounted) {
+          const ua = navigator.userAgent;
+          setBrowserInfo({
+            device: /Mobi|Android/i.test(ua) ? 'Mobile' : 'Desktop',
+            deviceType: /Mobi|Android/i.test(ua) ? 'Mobile' : 'Desktop',
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            language: navigator.language || 'en-US',
+          });
+        }
+      }
+    }
+    collectClientInfo();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Fetch link info
@@ -246,6 +263,22 @@ export default function VisitorConsentPage() {
     }
 
     try {
+      let activeBrowserInfo = { ...browserInfo };
+      if (!activeBrowserInfo.model || activeBrowserInfo.model === 'Model unavailable' || activeBrowserInfo.model === 'Desktop' || activeBrowserInfo.model === 'Mobile') {
+        try {
+          const fresh = await detectCurrentDevice();
+          activeBrowserInfo = {
+            ...activeBrowserInfo,
+            ...fresh,
+            device: fresh.isMobile ? 'Mobile' : 'Desktop',
+            deviceType: fresh.isMobile ? 'Mobile' : 'Desktop',
+            deviceName: fresh.model || 'Unknown Device',
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            screenCategory: window.innerWidth < 768 ? 'Mobile Screen' : 'Desktop Screen',
+          };
+        } catch (_) {}
+      }
+
       const payload = {
         visitorSessionId: `session-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
         visitorReferenceId: `VIS-${Date.now().toString().slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -261,7 +294,7 @@ export default function VisitorConsentPage() {
         longitude: locationCoords ? locationCoords.longitude : null,
         accuracy: locationCoords ? locationCoords.accuracy : null,
         cameraSnapshot: cameraSnapshot || null,
-        browserInfo,
+        browserInfo: activeBrowserInfo,
       };
 
       const res = await api.submitVisitorConsent(shortCode, payload);
@@ -278,7 +311,16 @@ export default function VisitorConsentPage() {
     }
     if (linkInfo) {
       try {
-        await api.skipVisitorConsent(shortCode);
+        let activeBrowserInfo = { ...browserInfo };
+        if (!activeBrowserInfo.model) {
+          try {
+            const fresh = await detectCurrentDevice();
+            activeBrowserInfo = { ...activeBrowserInfo, ...fresh };
+          } catch (_) {}
+        }
+        await api.skipVisitorConsent(shortCode, {
+          browserInfo: activeBrowserInfo,
+        });
       } catch (_) {}
       window.location.href = linkInfo.destinationUrl;
     }

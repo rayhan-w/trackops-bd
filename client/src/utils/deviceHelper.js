@@ -57,11 +57,35 @@ export async function detectCurrentDevice() {
   }
 
   // 4. Fallback Model Detection from UA if Client Hints didn't provide
+  // 4. Fallback Model Detection from UA if Client Hints didn't provide
   if (!model || model.toLowerCase() === 'k') {
     if (/iPhone/i.test(ua)) {
-      model = 'Apple iPhone';
       manufacturer = 'Apple';
       isMobile = true;
+      // Screen resolution heuristic for iPhone models
+      const w = window.screen.width;
+      const h = window.screen.height;
+      const r = window.devicePixelRatio || 1;
+      const maxDim = Math.max(w, h);
+      const minDim = Math.min(w, h);
+
+      if (maxDim === 932 && minDim === 430) {
+        model = 'Apple iPhone 15/16 Pro Max / Plus';
+      } else if (maxDim === 852 && minDim === 393) {
+        model = 'Apple iPhone 14/15/16 Pro';
+      } else if (maxDim === 926 && minDim === 428) {
+        model = 'Apple iPhone 12/13/14 Pro Max';
+      } else if (maxDim === 844 && minDim === 390) {
+        model = 'Apple iPhone 12/13/14 / 13 Pro';
+      } else if (maxDim === 896 && minDim === 414) {
+        model = r === 2 ? 'Apple iPhone 11 / XR' : 'Apple iPhone 11 Pro Max / XS Max';
+      } else if (maxDim === 812 && minDim === 375) {
+        model = 'Apple iPhone X / XS / 11 Pro';
+      } else if (maxDim === 667 && minDim === 375) {
+        model = 'Apple iPhone SE / 8 / 7';
+      } else {
+        model = 'Apple iPhone';
+      }
     } else if (/iPad/i.test(ua)) {
       model = 'Apple iPad';
       manufacturer = 'Apple';
@@ -92,8 +116,11 @@ export async function detectCurrentDevice() {
     if (/SM-S92/i.test(code)) formattedModel = `Galaxy S24 series (${code})`;
     else if (/SM-S91/i.test(code)) formattedModel = `Galaxy S23 series (${code})`;
     else if (/SM-S90/i.test(code)) formattedModel = `Galaxy S22 series (${code})`;
+    else if (/SM-G99/i.test(code)) formattedModel = `Galaxy S21 series (${code})`;
+    else if (/SM-G98/i.test(code)) formattedModel = `Galaxy S20 series (${code})`;
     else if (/SM-A/i.test(code)) formattedModel = `Galaxy A-series (${code})`;
     else if (/SM-M/i.test(code)) formattedModel = `Galaxy M-series (${code})`;
+    else if (/SM-F/i.test(code)) formattedModel = `Galaxy Z Fold/Flip (${code})`;
     else formattedModel = code ? `Galaxy (${code})` : 'Samsung Galaxy';
   } else if (/Pixel/i.test(model) || /Pixel/i.test(ua)) {
     manufacturer = 'Google';
@@ -101,18 +128,37 @@ export async function detectCurrentDevice() {
   } else if (/Redmi|POCO|Xiaomi|2[0-9]{3}|M2[0-9]{3}/i.test(model) || /Redmi|Xiaomi/i.test(ua)) {
     manufacturer = 'Xiaomi';
     formattedModel = model || 'Xiaomi / Redmi';
-  } else if (/vivo/i.test(model) || /vivo/i.test(ua)) {
+  } else if (/vivo|V2[0-9]{3}/i.test(model) || /vivo/i.test(ua)) {
     manufacturer = 'Vivo';
-    formattedModel = model || 'Vivo smartphone';
-  } else if (/OPPO|CPH/i.test(model) || /OPPO/i.test(ua)) {
+    const m = model.match(/V2[0-9]{3}/i);
+    formattedModel = m ? `Vivo smartphone (${m[0]})` : (model || 'Vivo smartphone');
+  } else if (/OPPO|CPH[0-9]+/i.test(model) || /OPPO/i.test(ua)) {
     manufacturer = 'OPPO';
-    formattedModel = model || 'OPPO smartphone';
-  } else if (/Realme|RMX/i.test(model) || /Realme/i.test(ua)) {
+    const m = model.match(/CPH[0-9]+/i);
+    formattedModel = m ? `OPPO smartphone (${m[0]})` : (model || 'OPPO smartphone');
+  } else if (/Realme|RMX[0-9]+/i.test(model) || /Realme/i.test(ua)) {
     manufacturer = 'Realme';
-    formattedModel = model || 'Realme smartphone';
+    const m = model.match(/RMX[0-9]+/i);
+    formattedModel = m ? `Realme (${m[0]})` : (model || 'Realme smartphone');
   } else if (/Infinix|X[0-9]{3,4}/i.test(model) || /Infinix/i.test(ua)) {
     manufacturer = 'Infinix';
-    formattedModel = model || 'Infinix smartphone';
+    const m = model.match(/X[0-9]{3,4}/i);
+    formattedModel = m ? `Infinix (${m[0]})` : (model || 'Infinix smartphone');
+  } else if (/Tecno/i.test(model) || /Tecno/i.test(ua)) {
+    manufacturer = 'Tecno';
+    formattedModel = model || 'Tecno smartphone';
+  } else if (/Walton|Primo/i.test(model) || /Walton/i.test(ua)) {
+    manufacturer = 'Walton';
+    formattedModel = model || 'Walton Primo';
+  } else if (/Symphony/i.test(model) || /Symphony/i.test(ua)) {
+    manufacturer = 'Symphony';
+    formattedModel = model || 'Symphony smartphone';
+  } else if (/OnePlus/i.test(model) || /OnePlus/i.test(ua)) {
+    manufacturer = 'OnePlus';
+    formattedModel = model || 'OnePlus smartphone';
+  } else if (/Moto|Motorola/i.test(model) || /Moto/i.test(ua)) {
+    manufacturer = 'Motorola';
+    formattedModel = model || 'Motorola smartphone';
   } else if (!isMobile) {
     if (os === 'Windows') formattedModel = 'Windows Desktop / Laptop';
     else if (os === 'macOS') formattedModel = 'Apple Mac';

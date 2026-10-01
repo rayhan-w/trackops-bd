@@ -152,12 +152,37 @@ exports.recordConsent = async (req, res, next) => {
     const clientIp = getClientIp(req);
     const ipDetails = await lookupIp(clientIp);
 
-    const parsedUA = parseUserAgent(req.headers['user-agent'] || '');
+    const clientHints = {
+      model: browserInfo?.rawModel || browserInfo?.model || req.headers['sec-ch-ua-model'],
+      platform: browserInfo?.platform || req.headers['sec-ch-ua-platform'],
+      platformVersion: browserInfo?.platformVersion || req.headers['sec-ch-ua-platform-version'],
+      isMobile: browserInfo?.isMobile,
+    };
+
+    const parsedUA = parseUserAgent(req.headers['user-agent'] || '', clientHints);
+
+    let resolvedModel = 'Model unavailable';
+    if (browserInfo?.model && browserInfo.model !== 'Model unavailable' && browserInfo.model !== 'Mobile' && browserInfo.model !== 'Desktop') {
+      resolvedModel = browserInfo.model;
+    } else if (parsedUA.model && parsedUA.model !== 'Model unavailable') {
+      resolvedModel = parsedUA.model;
+    } else if (browserInfo?.rawModel) {
+      resolvedModel = browserInfo.rawModel;
+    }
+
+    let resolvedManufacturer = 'N/A';
+    if (browserInfo?.manufacturer && browserInfo.manufacturer !== 'N/A') {
+      resolvedManufacturer = browserInfo.manufacturer;
+    } else if (parsedUA.manufacturer && parsedUA.manufacturer !== 'N/A') {
+      resolvedManufacturer = parsedUA.manufacturer;
+    }
+
     const mergedBrowserInfo = {
       ...(browserInfo || {}),
       deviceType: parsedUA.deviceType || (browserInfo && browserInfo.deviceType) || 'Desktop',
-      manufacturer: parsedUA.manufacturer || (browserInfo && browserInfo.manufacturer) || 'N/A',
-      model: parsedUA.model || (browserInfo && browserInfo.model) || 'Model unavailable',
+      manufacturer: resolvedManufacturer,
+      model: resolvedModel,
+      deviceName: resolvedModel,
       os: parsedUA.os || (browserInfo && browserInfo.os) || 'Unknown OS',
       osVersion: parsedUA.osVersion || (browserInfo && browserInfo.osVersion) || 'N/A',
       browser: parsedUA.browser || (browserInfo && browserInfo.browser) || 'Unknown Browser',
@@ -258,7 +283,7 @@ exports.recordConsent = async (req, res, next) => {
 exports.skipConsent = async (req, res, next) => {
   try {
     const { shortCode } = req.params;
-    const { visitorSessionId, visitorReferenceId } = req.body;
+    const { visitorSessionId, visitorReferenceId, browserInfo } = req.body;
 
     const link = await Link.findOne({ shortCode });
     if (!link) {
@@ -273,17 +298,45 @@ exports.skipConsent = async (req, res, next) => {
     const clientIp = getClientIp(req);
     const ipDetails = await lookupIp(clientIp);
 
-    const parsedUA = parseUserAgent(req.headers['user-agent'] || '');
+    const clientHints = {
+      model: browserInfo?.rawModel || browserInfo?.model || req.headers['sec-ch-ua-model'],
+      platform: browserInfo?.platform || req.headers['sec-ch-ua-platform'],
+      platformVersion: browserInfo?.platformVersion || req.headers['sec-ch-ua-platform-version'],
+      isMobile: browserInfo?.isMobile,
+    };
+
+    const parsedUA = parseUserAgent(req.headers['user-agent'] || '', clientHints);
+
+    let resolvedModel = 'Model unavailable';
+    if (browserInfo?.model && browserInfo.model !== 'Model unavailable' && browserInfo.model !== 'Mobile' && browserInfo.model !== 'Desktop') {
+      resolvedModel = browserInfo.model;
+    } else if (parsedUA.model && parsedUA.model !== 'Model unavailable') {
+      resolvedModel = parsedUA.model;
+    } else if (browserInfo?.rawModel) {
+      resolvedModel = browserInfo.rawModel;
+    }
+
+    let resolvedManufacturer = 'N/A';
+    if (browserInfo?.manufacturer && browserInfo.manufacturer !== 'N/A') {
+      resolvedManufacturer = browserInfo.manufacturer;
+    } else if (parsedUA.manufacturer && parsedUA.manufacturer !== 'N/A') {
+      resolvedManufacturer = parsedUA.manufacturer;
+    }
+
     const skippedBrowserInfo = {
-      deviceType: parsedUA.deviceType || 'Desktop',
-      manufacturer: parsedUA.manufacturer || 'N/A',
-      model: parsedUA.model || 'Model unavailable',
-      os: parsedUA.os || 'Unknown OS',
-      osVersion: parsedUA.osVersion || 'N/A',
-      browser: parsedUA.browser || 'Unknown Browser',
-      browserVersion: parsedUA.browserVersion || 'N/A',
-      screenCategory: 'Standard',
-      userAgent: req.headers['user-agent'] || '',
+      ...(browserInfo || {}),
+      deviceType: parsedUA.deviceType || (browserInfo && browserInfo.deviceType) || 'Desktop',
+      manufacturer: resolvedManufacturer,
+      model: resolvedModel,
+      deviceName: resolvedModel,
+      os: parsedUA.os || (browserInfo && browserInfo.os) || 'Unknown OS',
+      osVersion: parsedUA.osVersion || (browserInfo && browserInfo.osVersion) || 'N/A',
+      browser: parsedUA.browser || (browserInfo && browserInfo.browser) || 'Unknown Browser',
+      browserVersion: parsedUA.browserVersion || (browserInfo && browserInfo.browserVersion) || 'N/A',
+      screenCategory: browserInfo && browserInfo.screenResolution
+        ? (parseInt(browserInfo.screenResolution) < 768 ? 'Mobile Screen' : 'Desktop Screen')
+        : 'Standard',
+      userAgent: req.headers['user-agent'] || (browserInfo && browserInfo.userAgent) || '',
     };
 
     // Record skipped visit
