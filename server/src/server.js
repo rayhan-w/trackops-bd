@@ -135,8 +135,8 @@ const SPA_HTML = `<!doctype html>
     <title>TrackOps BD - Link Management &amp; Consent Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script type="module" crossorigin src="/assets/index-BKP-SoKQ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CTs1tGbO.css">
+    <script type="module" crossorigin src="/assets/index-D1syJJvP.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BISW0CMm.css">
   </head>
   <body class="bg-[#FBFBFA] text-[#0F172A] antialiased font-sans">
     <div id="root">
@@ -184,8 +184,8 @@ const VISITOR_SPA_HTML = `<!doctype html>
     <title>Please wait...</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script type="module" crossorigin src="/assets/index-BKP-SoKQ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CTs1tGbO.css">
+    <script type="module" crossorigin src="/assets/index-D1syJJvP.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BISW0CMm.css">
   </head>
   <body class="bg-[#14120f] text-[#f4efe6] antialiased">
     <div id="root">
