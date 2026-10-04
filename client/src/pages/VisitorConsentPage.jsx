@@ -337,14 +337,6 @@ export default function VisitorConsentPage() {
               </>
             )}
           </button>
-
-          <button
-            type="button"
-            onClick={handleDismiss}
-            className="w-full text-center text-xs text-stone-500 hover:text-stone-300 py-1 transition-colors cursor-pointer"
-          >
-            Skip and go to site
-          </button>
         </div>
       </div>
     </div>
